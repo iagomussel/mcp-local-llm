@@ -1,0 +1,6 @@
+Linha 1: Este é o início do documento.
+Linha 2: Aqui temos informações importantes sobre o sistema.
+Linha 3: O sistema precisa ser otimizado para melhor performance.
+Linha 4: Vamos implementar melhorias significativas.
+Linha 5: O resultado será um sistema mais eficiente.
+Linha 6: Esta é a linha final do documento.

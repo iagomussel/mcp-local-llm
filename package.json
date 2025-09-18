@@ -1,0 +1,29 @@
+{
+  "name": "mcp-local-llm",
+  "version": "1.0.0",
+  "description": "MCP server that uses a local LLM to respond to queries",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node test-mcp.js",
+    "setup": "node setup.js"
+  },
+  "keywords": [
+    "mcp",
+    "llm",
+    "local",
+    "ai"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "axios": "^1.6.0",
+    "dotenv": "^17.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

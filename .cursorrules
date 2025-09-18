@@ -1,0 +1,180 @@
+# Cursor Rules for MCP Local LLM Integration
+
+## 🚀 MANDATORY: Use MCP Tools Instead of Direct Actions
+
+### ⚠️ CRITICAL RULE: NEVER do these tasks directly - ALWAYS use MCP tools:
+
+#### 1. Text Humanization
+- ❌ NEVER: Try to humanize text yourself
+- ✅ ALWAYS: Use `humanize_content` or `humanize_compact` MCP tools
+- ✅ ALWAYS: Use `humanize_file` for file content with line references
+
+#### 2. File Operations
+- ❌ NEVER: Read entire files to process content
+- ✅ ALWAYS: Use `humanize_file` with file_path + optional line numbers
+- ✅ ALWAYS: Pass file references instead of file content
+
+#### 3. Terminal Commands
+- ❌ NEVER: Use `run_terminal_cmd` directly
+- ✅ ALWAYS: Use `run_command` MCP tool with summary_only=true
+- ✅ ALWAYS: Let MCP handle command execution and return summaries
+
+#### 4. AI Model Interactions
+- ❌ NEVER: Try to access AI models directly
+- ✅ ALWAYS: Use `ask_llm` MCP tool for questions
+- ✅ ALWAYS: Let MCP handle model selection automatically
+
+#### 5. File Comparison & Analysis
+- ❌ NEVER: Manually compare files or branches
+- ✅ ALWAYS: Use `diff_files` for file comparisons with LLM analysis
+- ✅ ALWAYS: Use `diff_branches` for git branch comparisons with LLM analysis
+- ✅ ALWAYS: Use `git_diff_file` for specific file comparison between branches
+
+#### 6. Code Debugging
+- ❌ NEVER: Try to debug code manually without context
+- ✅ ALWAYS: Use `debugger` tool for comprehensive code analysis
+- ✅ ALWAYS: Let MCP provide full context and LLM-powered debugging
+
+## 🎯 Token Economy Rules
+
+### For Maximum IDE Token Savings:
+1. **File References**: Always use file paths + line numbers instead of content
+2. **Compact Responses**: Prefer `humanize_compact` over `humanize_content`
+3. **Command Summaries**: Always use `summary_only=true` for commands
+4. **Minimal Parameters**: Only specify required parameters, use defaults
+
+## 📋 MCP Tool Usage Patterns
+
+### Text Humanization:
+```javascript
+// ✅ CORRECT - Use MCP tools
+humanize_content: { content: "text to humanize" }
+humanize_compact: { content: "text to humanize" }
+humanize_file: { file_path: "file.txt", start_line: 1, end_line: 10 }
+```
+
+### File Processing:
+```javascript
+// ✅ CORRECT - File references
+humanize_file: { file_path: "src/index.js" } // Entire file
+humanize_file: { file_path: "src/index.js", start_line: 5 } // From line 5
+humanize_file: { file_path: "src/index.js", start_line: 2, end_line: 8 } // Lines 2-8
+```
+
+### Command Execution:
+```javascript
+// ✅ CORRECT - MCP command execution
+run_command: { 
+  command: "npm install", 
+  directory: "/project",
+  summary_only: true 
+}
+```
+
+### AI Questions:
+```javascript
+// ✅ CORRECT - Use MCP for AI interactions
+ask_llm: { question: "How to optimize this code?" }
+```
+
+### File Comparison:
+```javascript
+// ✅ CORRECT - Use MCP for file comparisons
+diff_files: { 
+  file1_path: "old.js", 
+  file2_path: "new.js",
+  context_lines: 3 
+}
+```
+
+### Branch Comparison:
+```javascript
+// ✅ CORRECT - Use MCP for branch comparisons
+diff_branches: { 
+  branch2: "feature-branch",
+  directory: "/project",
+  context_lines: 3 
+}
+```
+
+### Git File Diff:
+```javascript
+// ✅ CORRECT - Use MCP for specific file comparison between branches
+git_diff_file: { 
+  file_path: "src/index.js",
+  branch2: "feature-branch",
+  directory: "/project",
+  context_lines: 3,
+  include_commit_info: true
+}
+```
+
+### Code Debugging:
+```javascript
+// ✅ CORRECT - Use MCP for comprehensive debugging
+debugger: { 
+  file_path: "src/index.js",
+  error_message: "TypeError: Cannot read property 'x' of undefined",
+  start_line: 10,
+  end_line: 20,
+  include_context: true
+}
+```
+
+## 🚫 FORBIDDEN Actions
+
+### NEVER do these directly:
+- ❌ Read entire files to process content
+- ❌ Execute terminal commands with `run_terminal_cmd`
+- ❌ Try to humanize text manually
+- ❌ Access AI models directly
+- ❌ Pass large content blocks to IDE
+- ❌ Manually compare files or branches
+- ❌ Debug code without comprehensive context
+- ❌ Analyze diffs without LLM assistance
+
+## ✅ REQUIRED Actions
+
+### ALWAYS do these:
+- ✅ Use MCP tools for all text processing
+- ✅ Use file references instead of content
+- ✅ Use compact responses when possible
+- ✅ Use command summaries instead of full output
+- ✅ Let MCP handle model selection automatically
+- ✅ Use diff_files for file comparisons with LLM analysis
+- ✅ Use diff_branches for git branch comparisons
+- ✅ Use git_diff_file for specific file comparison between branches
+- ✅ Use debugger for comprehensive code analysis
+
+## 🎯 Priority Order
+
+1. **First Choice**: `humanize_file` (for file content)
+2. **Second Choice**: `humanize_compact` (for text content)
+3. **Third Choice**: `humanize_content` (for detailed text)
+4. **Commands**: Always use `run_command` with `summary_only=true`
+5. **AI Questions**: Always use `ask_llm`
+6. **File Comparison**: Always use `diff_files` with LLM analysis
+7. **Branch Comparison**: Always use `diff_branches` with LLM analysis
+8. **Git File Diff**: Always use `git_diff_file` for specific file comparison
+9. **Code Debugging**: Always use `debugger` with full context
+
+## 💡 Token Optimization Tips
+
+- Use `humanize_compact` for quick improvements
+- Use `humanize_file` for file processing
+- Use `run_command` with `summary_only=true` for commands
+- Pass line numbers instead of full content
+- Use file paths instead of file content
+- Prefer compact responses over detailed ones
+
+## 🔧 Error Handling
+
+If MCP tools fail:
+1. Check if the tool is available
+2. Verify parameters are correct
+3. Use fallback to simpler MCP tools
+4. NEVER fall back to direct actions
+
+---
+
+**Remember: The MCP tools are optimized for IDE token economy. Always use them instead of direct actions!**
