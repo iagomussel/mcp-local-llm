@@ -55,12 +55,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install pkg globally
+        shell: bash
         run: pnpm install -g pkg
 
       - name: Create dist directory
+        shell: bash
         run: mkdir -p dist
 
       - name: Build binary
+        shell: bash
         run: |
           pkg src/index.js \
             --targets node18-${{ matrix.platform }}-${{ matrix.arch }} \
