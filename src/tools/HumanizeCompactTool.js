@@ -38,11 +38,11 @@ export class HumanizeCompactTool extends BaseTool {
     const temperature = 0.7; // Lower temperature for more focused responses
     const max_tokens = 150; // Very limited tokens for economy
 
-    const prompt = `Humanize este texto em português (mais natural, menos IA). Resposta MUITO concisa:
+    const prompt = `Humanize this text (more natural, less AI-like). VERY concise response:
 
 ${textToHumanize}
 
-Resposta:`;
+Response:`;
 
     try {
       const response = await this.callModelRunner({

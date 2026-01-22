@@ -69,11 +69,11 @@ export class HumanizeFileTool extends BaseTool {
       const temperature = 0.7;
       const max_tokens = 200; // Slightly more for file content
 
-      const prompt = `Humanize este texto em português (mais natural, menos IA). Resposta concisa:
+      const prompt = `Humanize this text (more natural, less AI-like). Concise response:
 
 ${textToHumanize}
 
-Resposta:`;
+Response:`;
 
       const response = await this.callModelRunner({
         model,
@@ -99,7 +99,7 @@ Resposta:`;
         ],
       };
     } catch (error) {
-      throw new Error(`Failed to humanize file: ${error.message}`);
+      throw new Error(`Failed to process file: ${error.message}`);
     }
   }
 }

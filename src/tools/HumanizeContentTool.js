@@ -39,19 +39,19 @@ export class HumanizeContentTool extends BaseTool {
     const max_tokens = this.getOptimalMaxTokens(textToHumanize);
 
     // Detect if user wants compact response for token economy
-    const isCompact = textToHumanize.includes('compact') || textToHumanize.includes('resumo') || textToHumanize.includes('breve');
+    const isCompact = textToHumanize.includes('compact') || textToHumanize.includes('summary') || textToHumanize.includes('brief');
     
     const prompt = isCompact 
-      ? `Humanize este texto em português (mais natural, menos IA):
+      ? `Humanize this text (more natural, less AI-like):
 
 ${textToHumanize}
 
-Resposta concisa:`
-      : `Corrija este texto em português (Use sinônimos menos óbvios, alterne estruturas de frases, insira pequenas expressões coloquiais ou pausas, evite parecer "IA"):
+Concise response:`
+      : `Fix this text (Use less obvious synonyms, alternate sentence structures, insert small colloquial expressions or pauses, avoid sounding "AI"):
 
 ${textToHumanize}
 
-Resposta:`;
+Response:`;
 
     try {
       const response = await this.callModelRunner({

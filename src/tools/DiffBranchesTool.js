@@ -52,7 +52,7 @@ export class DiffBranchesTool extends BaseTool {
       
       // Use LLM to analyze the diff
       const model = await this.selectBestModel('code analysis git diff branch comparison');
-      const analysisPrompt = `Analyze the following git branch differences and provide a comprehensive summary in Portuguese:
+      const analysisPrompt = `Analyze the following git branch differences and provide a comprehensive summary:
 
 Branch 1: ${currentBranch}
 Branch 2: ${branch2}
@@ -79,7 +79,7 @@ Please provide:
         content: [
           {
             type: 'text',
-            text: `🌿 **Análise de Diferenças entre Branches**\n\n**Branches:**\n- ${currentBranch}\n- ${branch2}\n\n**Git Diff:**\n\`\`\`diff\n${diff}\n\`\`\`\n\n**Análise LLM:**\n${analysis}`,
+            text: `🌿 **Branch Differences Analysis**\n\n**Branches:**\n- ${currentBranch}\n- ${branch2}\n\n**Git Diff:**\n\`\`\`diff\n${diff}\n\`\`\`\n\n**LLM Analysis:**\n${analysis}`,
           },
         ],
       };

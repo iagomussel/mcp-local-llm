@@ -111,14 +111,14 @@ export class SearchCodeUsageTool extends BaseTool {
             totalMatches += matches.length;
           }
         } catch (error) {
-          // Skip files that can't be read
-          console.warn(`Could not read file ${filePath}: ${error.message}`);
+          // Skip files that can't be read - log to stderr only
+          console.error(`[MCP] Could not read file ${filePath}: ${error.message}`);
         }
       }
 
       // Generate summary using LLM
       const model = await this.selectBestModel('code analysis usage search');
-      const summaryPrompt = `Analyze the following code usage search results and provide a comprehensive summary in Portuguese:
+      const summaryPrompt = `Analyze the following code usage search results and provide a comprehensive summary:
 
 Search Term: ${term}
 Root Path: ${root_path}
@@ -147,7 +147,7 @@ Please provide:
         content: [
           {
             type: 'text',
-            text: `🔍 **Análise de Uso de Código**\n\n**Termo:** \`${term}\`\n**Diretório:** ${root_path}\n**Arquivos analisados:** ${files.length}\n**Total de ocorrências:** ${totalMatches}\n\n**Resultados:**\n${results.map(r => `\n📄 **${r.file}** (${r.total_matches} ocorrências)\n${r.matches.map(m => `  ${m.line}: ${m.type} - ${m.context}`).join('\n')}`).join('\n')}\n\n**Análise LLM:**\n${analysis}`,
+            text: `🔍 **Code Usage Analysis**\n\n**Term:** \`${term}\`\n**Directory:** ${root_path}\n**Files analyzed:** ${files.length}\n**Total occurrences:** ${totalMatches}\n\n**Results:**\n${results.map(r => `\n📄 **${r.file}** (${r.total_matches} occurrences)\n${r.matches.map(m => `  ${m.line}: ${m.type} - ${m.context}`).join('\n')}`).join('\n')}\n\n**LLM Analysis:**\n${analysis}`,
           },
         ],
       };
@@ -182,8 +182,8 @@ Please provide:
           }
         }
       } catch (error) {
-        // Skip directories that can't be read
-        console.warn(`Could not read directory ${dirPath}: ${error.message}`);
+        // Skip directories that can't be read - log to stderr only
+        console.error(`[MCP] Could not read directory ${dirPath}: ${error.message}`);
       }
     }
 

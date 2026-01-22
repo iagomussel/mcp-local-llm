@@ -54,7 +54,7 @@ export class AskLLMTool extends BaseTool {
         ],
       };
     } catch (error) {
-      throw new Error(`Failed to get LLM response: ${error.message}`);
+      throw new Error(`Failed to process request: ${error.message}`);
     }
   }
 }

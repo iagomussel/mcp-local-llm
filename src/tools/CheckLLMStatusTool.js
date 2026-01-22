@@ -4,14 +4,14 @@ export class CheckLLMStatusTool extends BaseTool {
   getToolDefinition() {
     return {
       name: 'check_llm_status',
-      description: 'Check if Docker Model Runner is running and accessible',
+      description: 'Check if Ollama is running and accessible',
       inputSchema: { type: 'object', properties: {} },
     };
   }
 
   async handle(args) {
     try {
-      // Test with a simple API request to check if Docker Model Runner is running
+      // Test with a simple API request to check if Ollama is running
       const response = await this.server.getAvailableModels();
       const modelsCount = Array.isArray(response) ? response.length : 0;
       
@@ -19,7 +19,7 @@ export class CheckLLMStatusTool extends BaseTool {
         content: [
           {
             type: 'text',
-            text: `✅ Docker Model Runner is running at ${this.server.CONFIG.MODEL_RUNNER_URL}\nAvailable models: ${modelsCount}`,
+            text: `✅ Ollama is running at ${this.server.CONFIG.OLLAMA_URL}\nAvailable models: ${modelsCount}`,
           },
         ],
       };
@@ -28,7 +28,7 @@ export class CheckLLMStatusTool extends BaseTool {
         content: [
           {
             type: 'text',
-            text: `❌ Docker Model Runner is not accessible at ${this.server.CONFIG.MODEL_RUNNER_URL}\nError: ${error.message}\n\nMake sure Docker Model Runner is enabled in Docker Desktop and a model is running.\n\nTo start a model service:\n1. docker model run ai/gemma3:4B-Q4_0\n2. Or enable Model Runner service in Docker Desktop settings`,
+            text: `❌ Ollama is not accessible at ${this.server.CONFIG.OLLAMA_URL}\nError: ${error.message}\n\nMake sure Ollama is installed and running.\n\nTo start Ollama:\n1. Run: ollama serve\n2. Or ensure the Ollama service is running\n3. Pull a model: ollama pull llama3`,
           },
         ],
         isError: true,

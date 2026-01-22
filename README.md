@@ -1,26 +1,27 @@
-# MCP Local LLM Server
+# MCP Local LLM Server - Context Compressor
 
-A Model Context Protocol (MCP) server that provides access to local Large Language Models (LLMs) using Docker Model Runner. This server allows MCP clients to interact with AI models running via Docker's Model Runner feature for various AI-powered tasks.
+A Model Context Protocol (MCP) server that uses Ollama as a context preprocessor to reduce token consumption in Cursor by up to 80%. This server processes large files, error logs, and codebase searches locally before sending optimized summaries to Cursor.
 
 ## Features
 
-- 🤖 **Docker Model Runner Integration**: Works with AI models via Docker's Model Runner feature
-- 🔧 **Multiple Tools**: Ask questions, start models, and check server status
+- 🤖 **Ollama Integration**: Uses Ollama for local LLM processing
+- 📉 **Token Reduction**: Reduces token usage by processing context locally
+- 🔧 **Multiple Tools**: Context compression, code analysis, log processing, and semantic search
+- 📝 **MCP Prompts**: Dynamic instruction injection for Cursor
+- 📦 **MCP Resources**: Read-only data resources (config, models, tools, prompts, stats)
 - ⚙️ **Configurable**: Customizable model, temperature, and token limits
 - 🚀 **Easy Setup**: Simple installation and configuration
 - 📡 **MCP Compatible**: Works with any MCP-compatible client
-- 🐳 **Docker Ready**: Designed to work with Docker Desktop Model Runner
-- 🌐 **OpenAI Compatible**: Uses OpenAI-compatible API endpoints
+- 🔒 **Privacy**: Processes sensitive data locally, only sends summaries to Cursor
+- ✅ **Full MCP Support**: Implements all core MCP capabilities (Tools, Prompts, Resources)
 
 ## Prerequisites
 
 1. **Node.js** (version 18 or higher)
-2. **Docker Desktop** (version 4.41+ for Windows, 4.40+ for macOS)
-   - Download from: https://www.docker.com/products/docker-desktop/
-   - Install and start Docker Desktop
-3. **Docker Model Runner** enabled
-   - Enable in Docker Desktop settings
-   - Start a model using: `docker model run <model-name>`
+2. **Ollama** installed and running
+   - Download from: https://ollama.ai/
+   - Install and start Ollama service
+   - Pull at least one model: `ollama pull llama3`
 
 ## Installation
 
@@ -35,14 +36,14 @@ A Model Context Protocol (MCP) server that provides access to local Large Langua
 The server can be configured using environment variables:
 
 ```bash
-# Docker Model Runner server URL (default: http://localhost:12434)
-export MODEL_RUNNER_URL=http://localhost:12434
+# Ollama server URL (default: http://localhost:11434)
+export OLLAMA_URL=http://localhost:11434
 
-# Default model to use (default: ai/smollm2)
-export MODEL_NAME=ai/smollm2
+# Default model to use (default: llama3)
+export MODEL_NAME=llama3
 
-# Maximum tokens in response (default: 2048)
-export MAX_TOKENS=2048
+# Maximum tokens in response (default: 256)
+export MAX_TOKENS=256
 
 # Temperature for response generation (default: 0.7)
 export TEMPERATURE=0.7
@@ -62,48 +63,83 @@ npm run dev
 
 ### Available Tools
 
-The server provides three main tools:
+The server provides multiple tools for context compression and code analysis:
 
-#### 1. `ask_llm`
-Ask a question to the AI model running via Docker Model Runner and get a response.
+#### 1. `analyze_huge_file`
+Analyzes large files locally and returns a structured summary with architecture, global variables, entry points, and main logic. Reduces token usage by processing files locally before sending to Cursor.
+
+**Parameters:**
+- `path` (required): Path to the file to analyze
+
+**Example:**
+```json
+{
+  "name": "analyze_huge_file",
+  "arguments": {
+    "path": "/path/to/large-file.js"
+  }
+}
+```
+
+**Returns:** JSON with `architecture`, `global_variables`, `entry_points`, `main_logic`, and `original_size`
+
+#### 2. `digest_error_logs`
+Processes error logs locally to identify patterns, remove repetitive timestamps, and group similar errors. Returns a structured summary with probable cause and statistics.
+
+**Parameters:**
+- `log_file_path` (optional): Path to the log file
+- `terminal_output` (optional): Direct terminal output content
+
+**Example:**
+```json
+{
+  "name": "digest_error_logs",
+  "arguments": {
+    "log_file_path": "/path/to/error.log"
+  }
+}
+```
+
+**Returns:** JSON with `probable_cause`, `occurrences`, `period`, `error_types`, and `recommendation`
+
+#### 3. `codebase_discovery`
+Performs semantic search in the codebase to find files and specific lines where related logic is implemented. Uses local processing to reduce token usage.
+
+**Parameters:**
+- `query` (required): Semantic query about the code (e.g., "where is payment processed?")
+- `root_path` (optional): Root directory path to search in (default: current directory)
+
+**Example:**
+```json
+{
+  "name": "codebase_discovery",
+  "arguments": {
+    "query": "where is payment processed?",
+    "root_path": "/path/to/project"
+  }
+}
+```
+
+**Returns:** JSON with `files` (array of file references with line numbers), `total_occurrences`, and `summary`
+
+#### 4. `ask_llm`
+Ask a question to the AI model running via Ollama and get a response.
 
 **Parameters:**
 - `question` (required): The question or prompt to send to the AI model
-- `model` (optional): Specific model to use (defaults to configured model)
-- `temperature` (optional): Temperature for response generation (0.0-1.0)
-- `max_tokens` (optional): Maximum tokens in response
 
 **Example:**
 ```json
 {
   "name": "ask_llm",
   "arguments": {
-    "question": "What is the capital of France?",
-    "model": "ai/smollm2",
-    "temperature": 0.5,
-    "max_tokens": 100
+    "question": "What is the capital of France?"
   }
 }
 ```
 
-#### 2. `start_model`
-Start a Docker model using Docker Model Runner.
-
-**Parameters:**
-- `model` (required): The model name to start (e.g., ai/smollm2)
-
-**Example:**
-```json
-{
-  "name": "start_model",
-  "arguments": {
-    "model": "ai/smollm2"
-  }
-}
-```
-
-#### 3. `check_llm_status`
-Check if Docker Model Runner is running and accessible.
+#### 5. `check_llm_status`
+Check if Ollama is running and accessible.
 
 **Example:**
 ```json
@@ -113,9 +149,60 @@ Check if Docker Model Runner is running and accessible.
 }
 ```
 
+#### 6. `think_through`
+Adds an extra thinking layer by analyzing tasks, considering multiple approaches, and providing structured reasoning before execution.
+
+**Parameters:**
+- `task` (required): The task, question, or problem to think through
+- `context` (optional): Additional context about the situation
+- `focus_areas` (optional): Specific areas to focus on (e.g., ["security", "performance"])
+- `output_format` (optional): Format of output - "plan", "analysis", "considerations", or "structured" (default)
+
+**Example:**
+```json
+{
+  "name": "think_through",
+  "arguments": {
+    "task": "Refactor authentication to use JWT",
+    "context": "Current: session-based, Node.js/Express",
+    "focus_areas": ["security", "maintainability"],
+    "output_format": "structured"
+  }
+}
+```
+
+### Available Prompts
+
+The server provides MCP prompts that inject dynamic instructions into Cursor:
+
+1. **`mcp_tool_usage_rules`**: Mandatory rules for using MCP tools instead of direct actions
+2. **`token_economy_guidelines`**: Guidelines for maximizing token savings
+3. **`thinking_layer_instructions`**: Instructions for using the thinking layer
+4. **`context_compression_rules`**: Rules for using context compression tools
+
+### Available Resources
+
+The server exposes read-only resources via MCP:
+
+1. **`mcp://local-llm/config`**: Current server configuration
+2. **`mcp://local-llm/models`**: List of available Ollama models
+3. **`mcp://local-llm/tools`**: List of all available tools
+4. **`mcp://local-llm/prompts`**: List of all available prompts
+5. **`mcp://local-llm/usage_stats`**: Usage statistics and token savings info
+
+**Example:**
+```json
+{
+  "method": "resources/read",
+  "params": {
+    "uri": "mcp://local-llm/config"
+  }
+}
+```
+
 ## MCP Client Integration
 
-To use this server with an MCP client, add it to your client configuration:
+To use this server with an MCP client (like Cursor), add it to your client configuration:
 
 ```json
 {
@@ -124,8 +211,8 @@ To use this server with an MCP client, add it to your client configuration:
       "command": "node",
       "args": ["path/to/your/mcp-local-llm/src/index.js"],
       "env": {
-        "MODEL_RUNNER_URL": "http://localhost:12434",
-        "MODEL_NAME": "ai/smollm2"
+        "OLLAMA_URL": "http://localhost:11434",
+        "MODEL_NAME": "llama3"
       }
     }
   }
@@ -137,39 +224,38 @@ To use this server with an MCP client, add it to your client configuration:
 ### Common Issues
 
 1. **Connection Refused Error**
-   - Make sure Docker Desktop is running
-   - Check if Docker Model Runner is enabled in Docker Desktop settings
-   - Verify Model Runner is accessible at http://localhost:12434
+   - Make sure Ollama is running: `ollama serve` or check if the service is running
+   - Verify Ollama is accessible at http://localhost:11434
+   - Check if Ollama is installed: `ollama --version`
 
-2. **Docker Model Runner Not Found**
-   - Enable Docker Model Runner in Docker Desktop settings
-   - Update Docker Desktop to version 4.41+ (Windows) or 4.40+ (macOS)
-   - Start a model using: `docker model run <model-name>`
+2. **No Models Available**
+   - Pull a model: `ollama pull llama3`
+   - Check available models: `ollama list`
+   - Recommended models: `llama3`, `deepseek-coder`, `codellama`, `mistral`
 
-3. **No Models Available**
-   - Run a model using: `docker model run ai/smollm2`
-   - Check available models: `docker model ls`
-   - Ensure the model is running: `docker model ps`
-
-4. **Timeout Errors**
-   - Large models may take time to respond
+3. **Timeout Errors**
+   - Large files may take time to process (max 15 seconds)
    - Consider using smaller models for faster responses
-   - Increase timeout in the code if needed
-   - Check Docker resource allocation
+   - Check Ollama resource allocation
+
+4. **Tool Errors**
+   - Tools return generic error messages (identity hiding)
+   - Check server logs for detailed error information
+   - Verify file paths are correct and accessible
 
 ### Testing the Server
 
 You can test the server manually by sending MCP requests:
 
 ```bash
-# Test checking Model Runner status
+# Test checking Ollama status
 echo '{"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"name": "check_llm_status", "arguments": {}}}' | node src/index.js
 
-# Test starting a model
-echo '{"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "start_model", "arguments": {"model": "ai/smollm2"}}}' | node src/index.js
-
 # Test asking a question
-echo '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "ask_llm", "arguments": {"question": "Hello, how are you?"}}}' | node src/index.js
+echo '{"jsonrpc": "2.0", "id": 2, "method": "tools/call", "params": {"name": "ask_llm", "arguments": {"question": "Hello, how are you?"}}}' | node src/index.js
+
+# Test analyzing a file
+echo '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "analyze_huge_file", "arguments": {"path": "src/index.js"}}}' | node src/index.js
 ```
 
 ## Development
@@ -179,18 +265,24 @@ echo '{"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "as
 ```
 mcp-local-llm/
 ├── src/
-│   └── index.js          # Main MCP server implementation
+│   ├── index.js          # Main MCP server implementation
+│   └── tools/            # Tool implementations
+│       ├── AnalyzeHugeFileTool.js
+│       ├── DigestErrorLogsTool.js
+│       ├── CodebaseDiscoveryTool.js
+│       └── ... (other tools)
 ├── package.json          # Dependencies and scripts
 └── README.md            # This file
 ```
 
 ### Adding New Tools
 
-To add new tools, extend the `setupToolHandlers()` method in `src/index.js`:
+To add new tools:
 
-1. Add the tool definition to the `ListToolsRequestSchema` handler
-2. Add a case in the `CallToolRequestSchema` handler
-3. Implement the tool logic in a new method
+1. Create a new tool class extending `BaseTool` in `src/tools/`
+2. Implement `getToolDefinition()` and `handle()` methods
+3. Add the tool to `src/tools/index.js` exports and `ALL_TOOLS` array
+4. The tool will be automatically registered with the MCP server
 
 ## License
 

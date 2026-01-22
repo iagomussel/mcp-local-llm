@@ -15,6 +15,10 @@ import { DiffBranchesTool } from './DiffBranchesTool.js';
 import { DebuggerTool } from './DebuggerTool.js';
 import { GitDiffFileTool } from './GitDiffFileTool.js';
 import { SearchCodeUsageTool } from './SearchCodeUsageTool.js';
+import { AnalyzeHugeFileTool } from './AnalyzeHugeFileTool.js';
+import { DigestErrorLogsTool } from './DigestErrorLogsTool.js';
+import { CodebaseDiscoveryTool } from './CodebaseDiscoveryTool.js';
+import { ThinkThroughTool } from './ThinkThroughTool.js';
 
 // Re-export all tools
 export { BaseTool };
@@ -29,6 +33,10 @@ export { DiffBranchesTool };
 export { DebuggerTool };
 export { GitDiffFileTool };
 export { SearchCodeUsageTool };
+export { AnalyzeHugeFileTool };
+export { DigestErrorLogsTool };
+export { CodebaseDiscoveryTool };
+export { ThinkThroughTool };
 
 // Array of all available tools
 export const ALL_TOOLS = [
@@ -43,4 +51,8 @@ export const ALL_TOOLS = [
   DebuggerTool,
   GitDiffFileTool,
   SearchCodeUsageTool,
+  AnalyzeHugeFileTool,
+  DigestErrorLogsTool,
+  CodebaseDiscoveryTool,
+  ThinkThroughTool,
 ];

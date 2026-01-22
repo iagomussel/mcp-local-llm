@@ -63,7 +63,7 @@ export class DebuggerTool extends BaseTool {
 
       // Use LLM for comprehensive debugging analysis
       const model = await this.selectBestModel('debug code analysis error troubleshooting');
-      const debugPrompt = `Analyze the following code and error for debugging. Provide comprehensive analysis in Portuguese:
+      const debugPrompt = `Analyze the following code and error for debugging. Provide comprehensive analysis:
 
 File: ${file_path}
 Lines: ${start_line}-${endLine}
@@ -97,7 +97,7 @@ Please provide:
         content: [
           {
             type: 'text',
-            text: `🐛 **Análise de Debug Completa**\n\n**Arquivo:** ${file_path}\n**Linhas:** ${start_line}-${endLine}\n**Erro:** ${error_message}\n\n**Código Analisado:**\n\`\`\`javascript\n${relevantCode}\n\`\`\`\n\n**Análise LLM:**\n${analysis}`,
+            text: `🐛 **Complete Debug Analysis**\n\n**File:** ${file_path}\n**Lines:** ${start_line}-${endLine}\n**Error:** ${error_message}\n\n**Analyzed Code:**\n\`\`\`javascript\n${relevantCode}\n\`\`\`\n\n**LLM Analysis:**\n${analysis}`,
           },
         ],
       };

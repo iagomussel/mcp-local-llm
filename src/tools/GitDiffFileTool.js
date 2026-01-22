@@ -82,7 +82,7 @@ export class GitDiffFileTool extends BaseTool {
 
       // Use LLM to analyze the file diff
       const model = await this.selectBestModel('code analysis git diff file comparison');
-      const analysisPrompt = `Analyze the following git diff for a specific file between branches and provide a comprehensive summary in Portuguese:
+      const analysisPrompt = `Analyze the following git diff for a specific file between branches and provide a comprehensive summary:
 
 File: ${file_path}
 Branch 1: ${currentBranch}
@@ -111,18 +111,18 @@ Please provide:
       // Determine file status
       let fileStatus = '';
       if (!fileExistsInBranch1) {
-        fileStatus = '📄 **Arquivo adicionado** na branch `' + branch2 + '`';
+        fileStatus = '📄 **File added** in branch `' + branch2 + '`';
       } else if (!fileExistsInBranch2) {
-        fileStatus = '🗑️ **Arquivo removido** na branch `' + branch2 + '`';
+        fileStatus = '🗑️ **File removed** in branch `' + branch2 + '`';
       } else {
-        fileStatus = '📝 **Arquivo modificado** entre as branches';
+        fileStatus = '📝 **File modified** between branches';
       }
 
       return {
         content: [
           {
             type: 'text',
-            text: `🌿 **Análise de Diferenças de Arquivo entre Branches**\n\n**Arquivo:** ${file_path}\n**Branches:** ${currentBranch} → ${branch2}\n**Status:** ${fileStatus}\n\n${commitInfo ? `**Informações do Commit:**\n${commitInfo}\n` : ''}**Git Diff:**\n\`\`\`diff\n${diff}\n\`\`\`\n\n**Análise LLM:**\n${analysis}`,
+            text: `🌿 **File Differences Analysis Between Branches**\n\n**File:** ${file_path}\n**Branches:** ${currentBranch} → ${branch2}\n**Status:** ${fileStatus}\n\n${commitInfo ? `**Commit Information:**\n${commitInfo}\n` : ''}**Git Diff:**\n\`\`\`diff\n${diff}\n\`\`\`\n\n**LLM Analysis:**\n${analysis}`,
           },
         ],
       };
@@ -217,12 +217,12 @@ Please provide:
         if (code === 0) {
           const commits = output.trim().split('\n').filter(line => line.trim());
           if (commits.length > 0) {
-            resolve(`Commits que afetam este arquivo:\n${commits.slice(0, 5).join('\n')}${commits.length > 5 ? `\n... e mais ${commits.length - 5} commits` : ''}`);
+            resolve(`Commits affecting this file:\n${commits.slice(0, 5).join('\n')}${commits.length > 5 ? `\n... and ${commits.length - 5} more commits` : ''}`);
           } else {
-            resolve('Nenhum commit específico encontrado para este arquivo');
+            resolve('No specific commits found for this file');
           }
         } else {
-          resolve('Não foi possível obter informações do commit');
+          resolve('Could not retrieve commit information');
         }
       });
     });

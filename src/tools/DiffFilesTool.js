@@ -48,7 +48,7 @@ export class DiffFilesTool extends BaseTool {
       
       // Use LLM to analyze the diff
       const model = await this.selectBestModel('code analysis diff comparison');
-      const analysisPrompt = `Analyze the following file differences and provide a comprehensive summary in Portuguese:
+      const analysisPrompt = `Analyze the following file differences and provide a comprehensive summary:
 
 File 1: ${file1_path}
 File 2: ${file2_path}
@@ -75,7 +75,7 @@ Please provide:
         content: [
           {
             type: 'text',
-            text: `📊 **Análise de Diferenças entre Arquivos**\n\n**Arquivos:**\n- ${file1_path}\n- ${file2_path}\n\n**Diferenças:**\n\`\`\`diff\n${diff}\n\`\`\`\n\n**Análise LLM:**\n${analysis}`,
+            text: `📊 **File Differences Analysis**\n\n**Files:**\n- ${file1_path}\n- ${file2_path}\n\n**Differences:**\n\`\`\`diff\n${diff}\n\`\`\`\n\n**LLM Analysis:**\n${analysis}`,
           },
         ],
       };
