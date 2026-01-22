@@ -10,7 +10,11 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "test": "node test-mcp.js",
+    "test": "node test/run-all-tests.js",
+    "test:unit": "node --test test/unit/**/*.test.js",
+    "test:integration": "node --test test/integration/**/*.test.js",
+    "test:watch": "node --test --watch test/**/*.test.js",
+    "test:legacy": "node test-mcp.js",
     "setup": "node setup.js",
     "build": "pkg . --compress GZip",
     "build:linux": "pkg . --targets node18-linux-x64 --compress GZip",
