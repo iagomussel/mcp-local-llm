@@ -39,7 +39,8 @@
   },
   "pkg": {
     "scripts": [
-      "src/**/*.js"
+      "src/**/*.js",
+      "node_modules/**/*.js"
     ],
     "assets": [
       "src/**/*"
@@ -50,9 +51,6 @@
       "node18-darwin-x64",
       "node18-darwin-arm64"
     ],
-    "outputPath": "dist",
-    "options": [
-      "--experimental-specifier-resolution=node"
-    ]
+    "outputPath": "dist"
   }
 }
