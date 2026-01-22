@@ -53,14 +53,50 @@ test/
    - Temperature optimization
    - Compact mode handling
 
+5. **CheckLLMStatusTool Tests** (`test/unit/check-llm-status-tool.test.js`)
+   - Tool definition validation
+   - Ollama status checking
+   - Error handling for unavailable Ollama
+
+6. **Memory Tools Tests** (`test/unit/memory-tools.test.js`)
+   - MemoryStoreTool - Store operations
+   - MemoryRetrieveTool - Retrieve operations
+   - MemoryUpdateTool - Update operations
+   - MemoryDeleteTool - Delete operations
+   - MemorySearchTool - Search functionality
+
 ### Integration Tests
 
-1. **Server Tests** (`test/integration/server.test.js`)
+1. **All Tools Tests** (`test/integration/all-tools.test.js`)
+   - Verify all tools are exported
+   - Verify all tools can be instantiated
+   - Verify all tools have valid definitions
+   - Verify tool names are unique
+   - Verify tool registration
+
+2. **Server Initialization Tests** (`test/integration/server-initialization.test.js`)
+   - Tool registration verification
+   - Core tools presence
+   - Memory tools presence
+   - Code analysis tools presence
+   - Documentor tools presence
+   - Thinking layer tool presence
+   - Context compression tools presence
+   - Configuration validation
+
+3. **Server Tests** (`test/integration/server.test.js`)
    - MCP protocol compliance
    - Tool listing
    - Tool execution
    - Error handling
    - Prompt and resource listing
+
+4. **Full Server Tests** (`test/integration/full-server.test.js`)
+   - Server startup and initialization
+   - Multiple sequential requests
+   - Invalid request handling
+   - Missing parameter handling
+   - Resource access
 
 ## Running Tests
 
@@ -156,6 +192,21 @@ test('Server should respond to MCP request', async () => {
 - **Node.js**: Version 18.0.0 or higher (for built-in test runner)
 - **No external dependencies**: Uses only Node.js built-in modules
 - **ES Modules**: All tests use ES module syntax
+
+## Comprehensive Coverage
+
+The test suite ensures **full app functionality** by testing:
+
+✅ **All 33 tools** are registered and have valid definitions
+✅ **Core functionality** - LLM interaction, status checking, humanization
+✅ **Memory system** - Complete CRUD operations for memory storage
+✅ **Code analysis** - File diff, branch comparison, debugging, code search
+✅ **Context compression** - Large file analysis, error log processing, codebase discovery
+✅ **Documentation** - API docs, code docs, README generation
+✅ **MCP protocol** - Full compliance with Model Context Protocol
+✅ **Error handling** - Invalid requests, missing parameters, tool errors
+✅ **Server lifecycle** - Initialization, tool registration, resource management
+✅ **Integration** - End-to-end server communication and request handling
 
 ## Notes
 

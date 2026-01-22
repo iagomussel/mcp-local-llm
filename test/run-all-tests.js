@@ -14,11 +14,18 @@ const __dirname = dirname(__filename);
 const projectRoot = join(__dirname, '..');
 
 const testFiles = [
+  // Unit tests
   'test/unit/base-tool.test.js',
   'test/unit/memory-store.test.js',
   'test/unit/ask-llm-tool.test.js',
   'test/unit/humanize-content-tool.test.js',
+  'test/unit/check-llm-status-tool.test.js',
+  'test/unit/memory-tools.test.js',
+  // Integration tests
+  'test/integration/all-tools.test.js',
+  'test/integration/server-initialization.test.js',
   'test/integration/server.test.js',
+  'test/integration/full-server.test.js',
 ];
 
 async function runTests() {
