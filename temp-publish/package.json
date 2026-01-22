@@ -1,0 +1,35 @@
+{
+  "name": "mcp-local-llm",
+  "version": "1.0.1",
+  "description": "MCP server that uses a local LLM to respond to queries - Binary distribution",
+  "main": "bin/mcp-local-llm",
+  "bin": {
+    "mcp-local-llm": "./bin/mcp-local-llm.js"
+  },
+  "keywords": [
+    "mcp",
+    "llm",
+    "local",
+    "ai",
+    "binary"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "bin/",
+    "README.md",
+    "package.json"
+  ],
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ]
+}
