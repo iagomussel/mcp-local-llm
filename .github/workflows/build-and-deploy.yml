@@ -64,10 +64,23 @@ jobs:
         shell: bash
         run: mkdir -p dist
 
+      - name: Build bundle with esbuild
+        shell: bash
+        run: |
+          npx esbuild src/index.js \
+            --bundle \
+            --platform=node \
+            --target=node18 \
+            --format=cjs \
+            --outfile=dist/bundle.js \
+            --external:playwright \
+            --external:@playwright/test \
+            --banner:js="#!/usr/bin/env node"
+
       - name: Build binary
         shell: bash
         run: |
-          pkg package.json \
+          pkg dist/bundle.js \
             --targets node18-${{ matrix.platform }}-${{ matrix.arch }} \
             --output dist/${{ matrix.binary_name }} \
             --compress GZip
