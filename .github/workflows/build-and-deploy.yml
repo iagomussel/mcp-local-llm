@@ -331,7 +331,7 @@ jobs:
     name: Publish to npm
     needs: prepare-npm-package
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')) || github.event_name == 'workflow_dispatch'
     
     steps:
       - name: Checkout code
