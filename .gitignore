@@ -63,3 +63,9 @@ Thumbs.db
 
 # Memory storage
 .memory/
+
+# Build artifacts
+dist/
+npm-package/
+*.zip
+*.tar.gz

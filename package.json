@@ -3,12 +3,19 @@
   "version": "1.0.0",
   "description": "MCP server that uses a local LLM to respond to queries",
   "main": "src/index.js",
+  "bin": {
+    "mcp-local-llm": "./src/index.js"
+  },
   "type": "module",
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "test": "node test-mcp.js",
-    "setup": "node setup.js"
+    "setup": "node setup.js",
+    "build": "pkg . --compress GZip",
+    "build:linux": "pkg . --targets node18-linux-x64 --compress GZip",
+    "build:win": "pkg . --targets node18-win-x64 --compress GZip",
+    "build:macos": "pkg . --targets node18-darwin-x64,node18-darwin-arm64 --compress GZip"
   },
   "keywords": [
     "mcp",
@@ -24,7 +31,28 @@
     "dotenv": "^17.2.3",
     "playwright": "^1.40.0"
   },
+  "devDependencies": {
+    "pkg": "^5.8.1"
+  },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "pkg": {
+    "scripts": [
+      "src/**/*.js"
+    ],
+    "assets": [
+      "src/**/*"
+    ],
+    "targets": [
+      "node18-linux-x64",
+      "node18-win-x64",
+      "node18-darwin-x64",
+      "node18-darwin-arm64"
+    ],
+    "outputPath": "dist",
+    "options": [
+      "--experimental-specifier-resolution=node"
+    ]
   }
 }
