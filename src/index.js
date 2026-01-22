@@ -292,7 +292,10 @@ Remember: The MCP tools are optimized for IDE token economy. Always use them ins
           messages: [
             {
               role: 'user',
-              content: `# Thinking Layer Instructions
+              content: [
+                {
+                  type: 'text',
+                  text: `# Thinking Layer Instructions
 
 ## When to Use \`think_through\` Tool:
 
@@ -355,6 +358,8 @@ Use the thinking layer for complex tasks that require:
 - Reduced execution errors through planning
 - Multiple approaches considered
 - Risk mitigation before implementation`,
+                },
+              ],
             },
           ],
         },
@@ -618,29 +623,43 @@ Use the thinking layer for complex tasks that require:
   async selectBestModel(question) {
     const availableModels = await this.getAvailableModels();
 
+    // Helper to find model by prefix (handles version suffixes like :8b)
+    const findModelByPrefix = (prefix) => {
+      return availableModels.find(model => model.startsWith(prefix)) || null;
+    };
+
     // Simple routing rules for Ollama models
     if (/code|debug|function|regex|algorithm|script/i.test(question)) {
-      if (availableModels.includes("deepseek-coder")) return "deepseek-coder";
-      if (availableModels.includes("codellama")) return "codellama";
-      if (availableModels.includes("qwen2.5-coder")) return "qwen2.5-coder";
+      const model = findModelByPrefix("deepseek-coder") || 
+                    findModelByPrefix("codellama") || 
+                    findModelByPrefix("qwen2.5-coder");
+      if (model) return model;
     }
 
-    if (/math|calculation|logic|reason/i.test(question)) {
-      if (availableModels.includes("deepseek-r1")) return "deepseek-r1";
-      if (availableModels.includes("llama3.1")) return "llama3.1";
+    if (/math|calculation|logic|reason|analysis|planning/i.test(question)) {
+      const model = findModelByPrefix("deepseek-r1") || 
+                    findModelByPrefix("llama3.1");
+      if (model) return model;
     }
 
     if (/story|creative|escreva|texto longo|ensaio/i.test(question)) {
-      if (availableModels.includes("llama3.1")) return "llama3.1";
-      if (availableModels.includes("mistral")) return "mistral";
+      const model = findModelByPrefix("llama3.1") || 
+                    findModelByPrefix("mistral") ||
+                    findModelByPrefix("ministral");
+      if (model) return model;
     }
 
     if (/chat|menu|pedido|resposta curta/i.test(question)) {
-      if (availableModels.includes("llama3")) return "llama3";
-      if (availableModels.includes("mistral")) return "mistral";
+      const model = findModelByPrefix("llama3") || 
+                    findModelByPrefix("mistral") ||
+                    findModelByPrefix("ministral");
+      if (model) return model;
     }
 
-    // Fallback default
+    // Fallback default - prefer llama3.1:8b if available
+    const llama31 = findModelByPrefix("llama3.1");
+    if (llama31) return llama31;
+    
     return availableModels[0] || CONFIG.DEFAULT_MODEL;
   }
 

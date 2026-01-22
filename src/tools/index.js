@@ -19,6 +19,24 @@ import { AnalyzeHugeFileTool } from './AnalyzeHugeFileTool.js';
 import { DigestErrorLogsTool } from './DigestErrorLogsTool.js';
 import { CodebaseDiscoveryTool } from './CodebaseDiscoveryTool.js';
 import { ThinkThroughTool } from './ThinkThroughTool.js';
+import { PlaywrightNavigateTool } from './PlaywrightNavigateTool.js';
+import { PlaywrightScreenshotTool } from './PlaywrightScreenshotTool.js';
+import { PlaywrightExtractContentTool } from './PlaywrightExtractContentTool.js';
+import { PlaywrightInteractTool } from './PlaywrightInteractTool.js';
+import { DocumentorAPITool } from './DocumentorAPITool.js';
+import { DocumentorCodeTool } from './DocumentorCodeTool.js';
+import { DocumentorReadmeTool } from './DocumentorReadmeTool.js';
+import { MemoryStoreTool } from './MemoryStoreTool.js';
+import { MemoryRetrieveTool } from './MemoryRetrieveTool.js';
+import { MemoryUpdateTool } from './MemoryUpdateTool.js';
+import { MemoryDeleteTool } from './MemoryDeleteTool.js';
+import { MemorySearchTool } from './MemorySearchTool.js';
+import { DesktopLaunchTool } from './DesktopLaunchTool.js';
+import { DesktopSystemInfoTool } from './DesktopSystemInfoTool.js';
+import { DesktopScreenshotTool } from './DesktopScreenshotTool.js';
+import { DesktopFileOperationsTool } from './DesktopFileOperationsTool.js';
+import { DesktopNotificationTool } from './DesktopNotificationTool.js';
+import { DesktopClipboardTool } from './DesktopClipboardTool.js';
 
 // Re-export all tools
 export { BaseTool };
@@ -37,6 +55,24 @@ export { AnalyzeHugeFileTool };
 export { DigestErrorLogsTool };
 export { CodebaseDiscoveryTool };
 export { ThinkThroughTool };
+export { PlaywrightNavigateTool };
+export { PlaywrightScreenshotTool };
+export { PlaywrightExtractContentTool };
+export { PlaywrightInteractTool };
+export { DocumentorAPITool };
+export { DocumentorCodeTool };
+export { DocumentorReadmeTool };
+export { MemoryStoreTool };
+export { MemoryRetrieveTool };
+export { MemoryUpdateTool };
+export { MemoryDeleteTool };
+export { MemorySearchTool };
+export { DesktopLaunchTool };
+export { DesktopSystemInfoTool };
+export { DesktopScreenshotTool };
+export { DesktopFileOperationsTool };
+export { DesktopNotificationTool };
+export { DesktopClipboardTool };
 
 // Array of all available tools
 export const ALL_TOOLS = [
@@ -55,4 +91,22 @@ export const ALL_TOOLS = [
   DigestErrorLogsTool,
   CodebaseDiscoveryTool,
   ThinkThroughTool,
+  PlaywrightNavigateTool,
+  PlaywrightScreenshotTool,
+  PlaywrightExtractContentTool,
+  PlaywrightInteractTool,
+  DocumentorAPITool,
+  DocumentorCodeTool,
+  DocumentorReadmeTool,
+  MemoryStoreTool,
+  MemoryRetrieveTool,
+  MemoryUpdateTool,
+  MemoryDeleteTool,
+  MemorySearchTool,
+  DesktopLaunchTool,
+  DesktopSystemInfoTool,
+  DesktopScreenshotTool,
+  DesktopFileOperationsTool,
+  DesktopNotificationTool,
+  DesktopClipboardTool,
 ];
