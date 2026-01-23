@@ -4,7 +4,7 @@ export class SecurityScannerTool extends BaseTool {
   getToolDefinition() {
     return {
       name: 'security_scanner',
-      description: 'LLM-powered security and performance scanner that analyzes code files for vulnerabilities, performance issues (race conditions, deadlocks, memory leaks), and improvement opportunities. Returns structured JSON with security issues and recommendations.',
+      description: 'LLM-powered security, performance, and code quality scanner that analyzes code files for vulnerabilities, performance issues (race conditions, N+1 queries, algorithmic complexity), code quality issues (missing tests, hardcoded values, exposed credentials), and improvement opportunities. Returns structured JSON with security issues and recommendations.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -67,8 +67,8 @@ export class SecurityScannerTool extends BaseTool {
 
       const totalLines = validFiles.reduce((sum, f) => sum + f.lineCount, 0);
 
-      // System prompt for security and performance analysis - direct JSON output only
-      const systemPrompt = `You are a senior security and performance consultant analyzing code for vulnerabilities, performance issues, and improvement opportunities. Return ONLY valid JSON. No explanations, markdown blocks, or text outside JSON. Start response with { and end with }.
+      // System prompt for security, performance, and code quality analysis - direct JSON output only
+      const systemPrompt = `You are a senior security, performance, and code quality consultant analyzing code for vulnerabilities, performance issues, code quality problems, and improvement opportunities. Return ONLY valid JSON. No explanations, markdown blocks, or text outside JSON. Start response with { and end with }.
 
 Analyze code for:
 
@@ -76,7 +76,8 @@ SECURITY VULNERABILITIES:
 - SQL injection, XSS, CSRF, SSRF
 - Authentication and authorization flaws
 - Insecure dependencies and outdated packages
-- Sensitive data exposure (secrets, credentials, PII)
+- Sensitive data exposure (secrets, credentials, PII, API keys, passwords)
+- Exposed credentials (hardcoded passwords, API keys, tokens, secrets in code)
 - Insecure deserialization
 - Missing security headers
 - Weak cryptography
@@ -84,24 +85,33 @@ SECURITY VULNERABILITIES:
 - Security misconfigurations
 
 PERFORMANCE ISSUES:
-- Race conditions (concurrent access without proper synchronization)
+- Race conditions (concurrent access without proper synchronization, shared state mutations)
 - Deadlocks and livelocks
 - Memory leaks and resource leaks
 - Blocking operations in async code
-- N+1 query problems
+- N+1 query problems (multiple queries in loops instead of batch/join)
+- Algorithmic complexity issues (O(N²), O(2^N) when O(N) or O(logN) possible)
 - Inefficient algorithms and data structures
 - Unnecessary computations or redundant operations
 - Missing caching opportunities
 - Large payloads or inefficient data transfer
 - CPU-intensive operations blocking event loop
 
-CODE QUALITY & ARCHITECTURE:
+CODE QUALITY ISSUES:
+- Missing tests (functions/classes without corresponding test files)
+- Hardcoded values (magic numbers, strings, URLs, configuration values)
+- Exposed credentials (API keys, passwords, tokens hardcoded in source)
 - Code smells and anti-patterns
 - Tight coupling and low cohesion
 - Missing error handling
 - Poor error messages
 - Code duplication
-- Overly complex logic
+- Overly complex logic (high cyclomatic complexity)
+- Magic numbers and strings (should be constants)
+- Missing input validation
+- Inconsistent code style
+- Poor naming conventions
+- Unused code (dead code, unused imports/variables)
 
 Required JSON structure:
 {
@@ -109,7 +119,7 @@ Required JSON structure:
     {
       "file": "path/to/file.js",
       "severity": "critical|high|medium|low",
-      "type": "vulnerability type (e.g., sql_injection, xss, race_condition, memory_leak)",
+      "type": "vulnerability type (e.g., sql_injection, xss, exposed_credentials, race_condition, memory_leak, n_plus_one_query, missing_tests, hardcoded_value)",
       "line": 42,
       "description": "brief description",
       "recommendation": "how to fix"
@@ -118,7 +128,7 @@ Required JSON structure:
   "improvements": [
     {
       "file": "path/to/file.js",
-      "category": "security|performance|code_quality|architecture",
+      "category": "security|performance|code_quality|architecture|testing",
       "line": 42,
       "description": "improvement description",
       "recommendation": "suggestion"
@@ -132,18 +142,26 @@ Required JSON structure:
     "critical_count": 0,
     "high_count": 0,
     "medium_count": 0,
-    "low_count": 0
+    "low_count": 0,
+    "by_category": {
+      "security": 0,
+      "performance": 0,
+      "code_quality": 0,
+      "testing": 0,
+      "architecture": 0
+    }
   }
 }`;
 
-      const userPrompt = `Analyze these ${validFiles.length} file(s) for security vulnerabilities, performance issues (including race conditions, deadlocks, memory leaks), and improvement opportunities:
+      const userPrompt = `Analyze these ${validFiles.length} file(s) for security vulnerabilities, performance issues (race conditions, N+1 queries, algorithmic complexity), code quality issues (missing tests, hardcoded values, exposed credentials), and improvement opportunities:
 
 ${filesContent}`;
 
-      // Select model optimized for security and performance analysis
-      const model = await this.selectBestModel('security vulnerability performance race condition code analysis');
+      // Select model optimized for security, performance, and code quality analysis
+      const model = await this.selectBestModel('security vulnerability performance race condition code quality testing n+1 query algorithmic complexity analysis');
       const temperature = 0.2; // Very low temperature for accurate security analysis
-      const max_tokens = 8192; // Higher limit for comprehensive security reports
+      // Get max tokens based on model capabilities
+      const max_tokens = await this.getOptimalMaxTokensForModel(model, 'comprehensive security and code quality analysis');
 
       const response = await this.callModelRunner({
         model,
@@ -191,6 +209,22 @@ ${filesContent}`;
         // Ensure required fields exist
         if (!parsedResult.vulnerabilities) parsedResult.vulnerabilities = [];
         if (!parsedResult.improvements) parsedResult.improvements = [];
+        
+        // Calculate category counts
+        const byCategory = {
+          security: 0,
+          performance: 0,
+          code_quality: 0,
+          testing: 0,
+          architecture: 0,
+        };
+        
+        parsedResult.improvements?.forEach(imp => {
+          if (imp.category && byCategory.hasOwnProperty(imp.category)) {
+            byCategory[imp.category]++;
+          }
+        });
+        
         if (!parsedResult.summary) {
           parsedResult.summary = {
             total_files: validFiles.length,
@@ -201,7 +235,13 @@ ${filesContent}`;
             high_count: parsedResult.vulnerabilities?.filter(v => v.severity === 'high').length || 0,
             medium_count: parsedResult.vulnerabilities?.filter(v => v.severity === 'medium').length || 0,
             low_count: parsedResult.vulnerabilities?.filter(v => v.severity === 'low').length || 0,
+            by_category: byCategory,
           };
+        } else {
+          // Ensure by_category exists
+          if (!parsedResult.summary.by_category) {
+            parsedResult.summary.by_category = byCategory;
+          }
         }
       }
 

@@ -64,6 +64,9 @@ Thumbs.db
 # Memory storage
 .memory/
 
+# Temporary files (should not be created, but ignore if they exist)
+tmp/
+
 # Build artifacts
 dist/
 npm-package/

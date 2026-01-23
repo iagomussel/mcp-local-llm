@@ -1,4 +1,0 @@
-{
-  "summary": "Atualizado SecurityScannerTool para incluir análise de performance e race conditions. O prompt agora especifica análise detalhada de problemas de performance incluindo race conditions (acesso concorrente sem sincronização adequada), deadlocks, livelocks, memory leaks, operações bloqueantes em código async, problemas N+1, algoritmos ineficientes, falta de cache, e operações CPU-intensivas bloqueando event loop. O tipo de vulnerabilidade agora pode incluir 'race_condition' e 'memory_leak' além dos tipos de segurança tradicionais. A descrição do tool também foi atualizada para refletir essas capacidades.",
-  "current_status": "SecurityScannerTool agora analisa tanto vulnerabilidades de segurança quanto problemas de performance, incluindo race conditions. O tool está completo e pronto para detectar uma ampla gama de problemas de segurança e performance em código."
-}

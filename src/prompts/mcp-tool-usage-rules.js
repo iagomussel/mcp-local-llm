@@ -63,6 +63,12 @@ export const mcpToolUsageRules = {
 - ✅ ALWAYS: Use \`think_through\` for complex tasks requiring analysis
 - ✅ ALWAYS: Get structured plans before execution
 
+### 11. Memory & Persistence
+- ❌ NEVER: Create log files, tmp directories, or JSON files in the project
+- ❌ NEVER: Use file system operations for storing chat summaries or progress
+- ✅ ALWAYS: Use \`memory_store\` MCP tool for persistent storage
+- ✅ ALWAYS: Use memory tools for chat summaries, progress tracking, and state
+
 ## FORBIDDEN Actions
 - ❌ Read entire files to process content
 - ❌ Execute terminal commands with \`run_terminal_cmd\`
@@ -72,6 +78,8 @@ export const mcpToolUsageRules = {
 - ❌ Manually compare files or branches
 - ❌ Debug code without comprehensive context
 - ❌ Analyze diffs without LLM assistance
+- ❌ Create log files, tmp directories, or any files for storing summaries/progress
+- ❌ Use file system operations for persistence (use memory_store instead)
 
 ## REQUIRED Actions
 - ✅ Use MCP tools for all text processing
@@ -81,6 +89,7 @@ export const mcpToolUsageRules = {
 - ✅ Let MCP handle model selection automatically
 - ✅ Use context compression tools for large files/logs
 - ✅ Use thinking layer for complex tasks
+- ✅ Use \`memory_store\` for chat summaries and persistent data (never create files)
 
 Remember: The MCP tools are optimized for IDE token economy. Always use them instead of direct actions!`,
     },

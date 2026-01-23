@@ -182,6 +182,14 @@ class LocalLLMServer {
   get getOptimalMaxTokens() {
     return (question) => this.modelSelector.getOptimalMaxTokens(question);
   }
+
+  get getMaxTokensForModel() {
+    return (modelName) => this.modelSelector.getMaxTokensForModel(modelName);
+  }
+
+  get getOptimalMaxTokensForModel() {
+    return (modelName, question) => this.modelSelector.getOptimalMaxTokensForModel(modelName, question);
+  }
 }
 
 // Start the server

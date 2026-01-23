@@ -83,9 +83,8 @@ ${contentToAnalyze}`;
       // Select model optimized for code analysis
       const model = await this.selectBestModel('code analysis architecture');
       const temperature = 0.3; // Low temperature for technical accuracy
-      // Use higher token limit for comprehensive structured analysis
-      // For large files, we need enough tokens for complete JSON response
-      const max_tokens = 10*4096; // Increased for complete JSON analysis
+      // Get max tokens based on model capabilities for comprehensive structured analysis
+      const max_tokens = await this.getOptimalMaxTokensForModel(model, 'detailed comprehensive structured JSON analysis');
 
       const response = await this.callModelRunner({
         model,

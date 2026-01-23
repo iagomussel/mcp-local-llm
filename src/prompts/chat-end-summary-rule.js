@@ -17,7 +17,10 @@ At the **end of every chat turn**, do the following without exception:
    - \`current_status\`: a brief snapshot of overall project progress.
    - \`extra_info\`: any additional information that is not part of the summary or current status.
 
-2. **Store** using the \`memory_store\` MCP tool:
+2. **Store** using the \`memory_store\` MCP tool (NEVER create files):
+   
+   ❌ **FORBIDDEN**: Creating files, directories, or log files (tmp/, *.json, *.log, etc.)
+   ✅ **REQUIRED**: Use only the \`memory_store\` MCP tool
    
    Use the \`memory_store\` tool with:
    - \`key\`: \`chat-summary-YYYYMMDD-HHmmss\` (use current date/time)
@@ -38,7 +41,9 @@ At the **end of every chat turn**, do the following without exception:
 3. **Silence**
 
    * Do **not** ask for confirmation.
-   * Do **not** print extra explanation—just call the memory_store tool.`,
+   * Do **not** print extra explanation—just call the memory_store tool.
+   * Do **not** create any files in the project directory (no tmp/, no log files, no JSON files).
+   * Do **not** use file system operations—only use the memory_store MCP tool.`,
     },
   ],
 };

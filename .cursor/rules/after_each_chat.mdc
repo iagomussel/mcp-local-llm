@@ -1,5 +1,5 @@
 ---
-description: Always write a chat-end JSON summary to ./tmp
+description: Always store chat-end summary in memory using memory_store tool
 alwaysApply: true
 ---
 
@@ -11,15 +11,17 @@ At the **end of every chat turn**, do the following without exception:
    - `summary`: one-paragraph recap of *this* chat turn (decisions, blockers, next steps).  
    - `current_status`: a brief snapshot of overall project progress.
 
-2. **Persist**  
-   If the `tmp` directory does not exist, create it:
-   ```bash
-   mkdir -p tmp
-   ```
+2. **Store in Memory**  
+   Use the `memory_store` MCP tool to persist the summary:
+   - **key**: `chat-summary-YYYYMMDD-HHmmss` (use current date/time)
+   - **content**: JSON string with summary and current_status
+   - **category**: `chat_summary`
+   - **tags**: `["chat", "summary", "progress"]`
+   - **metadata**: `{ "timestamp": "ISO8601 timestamp", "chat_turn": "current turn number if available" }`
 
-3. **Write** the JSON file using Cursor’s file-creation syntax:
-
-   ```json: tmp/summary-${{date:YYYYMMDD-HHmmss}}.json
+3. **Format**
+   Store as JSON string:
+   ```json
    {
      "summary": "<insert summary here>",
      "current_status": "<insert current status here>"
@@ -29,4 +31,5 @@ At the **end of every chat turn**, do the following without exception:
 4. **Silence**
 
    * Do **not** ask for confirmation.
-   * Do **not** print extra explanation—just run the commands & write the file.
+   * Do **not** print extra explanation—just call the memory_store tool silently.
+   * Do **not** create any files in the project directory.

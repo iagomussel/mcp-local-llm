@@ -37,4 +37,14 @@ export class BaseTool {
   getOptimalMaxTokens(question) {
     return this.server.getOptimalMaxTokens(question);
   }
+
+  // Helper method to get max tokens for a specific model
+  getMaxTokensForModel(modelName) {
+    return this.server.getMaxTokensForModel(modelName);
+  }
+
+  // Helper method to get optimal max tokens for a model and use case
+  async getOptimalMaxTokensForModel(modelName, question = '') {
+    return await this.server.getOptimalMaxTokensForModel(modelName, question);
+  }
 }

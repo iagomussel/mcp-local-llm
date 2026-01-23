@@ -104,7 +104,7 @@ test('GeminiAdapter should throw error on empty response', () => {
 
 test('GeminiAdapter should use constants', () => {
   assert.ok(GEMINI_CONSTANTS);
-  assert.strictEqual(GEMINI_CONSTANTS.DEFAULT_MODEL, 'gemini-1.5-flash');
+  assert.strictEqual(GEMINI_CONSTANTS.DEFAULT_MODEL, 'gemini-2.5-flash');
   assert.ok(Array.isArray(GEMINI_CONSTANTS.MODELS));
   assert.ok(GEMINI_CONSTANTS.MODELS.length > 0);
 });
