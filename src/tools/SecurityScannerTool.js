@@ -4,7 +4,7 @@ export class SecurityScannerTool extends BaseTool {
   getToolDefinition() {
     return {
       name: 'security_scanner',
-      description: 'LLM-powered security scanner that analyzes code files for vulnerabilities and improvement opportunities. Returns structured JSON with security issues and recommendations.',
+      description: 'LLM-powered security and performance scanner that analyzes code files for vulnerabilities, performance issues (race conditions, deadlocks, memory leaks), and improvement opportunities. Returns structured JSON with security issues and recommendations.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -67,14 +67,41 @@ export class SecurityScannerTool extends BaseTool {
 
       const totalLines = validFiles.reduce((sum, f) => sum + f.lineCount, 0);
 
-      // System prompt for security analysis - direct JSON output only
-      const systemPrompt = `You are a senior security consultant analyzing code for vulnerabilities and improvement opportunities. Return ONLY valid JSON. No explanations, markdown blocks, or text outside JSON. Start response with { and end with }.
+      // System prompt for security and performance analysis - direct JSON output only
+      const systemPrompt = `You are a senior security and performance consultant analyzing code for vulnerabilities, performance issues, and improvement opportunities. Return ONLY valid JSON. No explanations, markdown blocks, or text outside JSON. Start response with { and end with }.
 
 Analyze code for:
-- Security vulnerabilities (SQL injection, XSS, CSRF, authentication issues, authorization flaws, insecure dependencies, sensitive data exposure, etc.)
-- Security best practices violations
-- Performance and code quality improvements
-- Architecture and design improvements
+
+SECURITY VULNERABILITIES:
+- SQL injection, XSS, CSRF, SSRF
+- Authentication and authorization flaws
+- Insecure dependencies and outdated packages
+- Sensitive data exposure (secrets, credentials, PII)
+- Insecure deserialization
+- Missing security headers
+- Weak cryptography
+- Path traversal, command injection
+- Security misconfigurations
+
+PERFORMANCE ISSUES:
+- Race conditions (concurrent access without proper synchronization)
+- Deadlocks and livelocks
+- Memory leaks and resource leaks
+- Blocking operations in async code
+- N+1 query problems
+- Inefficient algorithms and data structures
+- Unnecessary computations or redundant operations
+- Missing caching opportunities
+- Large payloads or inefficient data transfer
+- CPU-intensive operations blocking event loop
+
+CODE QUALITY & ARCHITECTURE:
+- Code smells and anti-patterns
+- Tight coupling and low cohesion
+- Missing error handling
+- Poor error messages
+- Code duplication
+- Overly complex logic
 
 Required JSON structure:
 {
@@ -82,7 +109,7 @@ Required JSON structure:
     {
       "file": "path/to/file.js",
       "severity": "critical|high|medium|low",
-      "type": "vulnerability type",
+      "type": "vulnerability type (e.g., sql_injection, xss, race_condition, memory_leak)",
       "line": 42,
       "description": "brief description",
       "recommendation": "how to fix"
@@ -109,12 +136,12 @@ Required JSON structure:
   }
 }`;
 
-      const userPrompt = `Analyze these ${validFiles.length} file(s) for security vulnerabilities and improvement opportunities:
+      const userPrompt = `Analyze these ${validFiles.length} file(s) for security vulnerabilities, performance issues (including race conditions, deadlocks, memory leaks), and improvement opportunities:
 
 ${filesContent}`;
 
-      // Select model optimized for security analysis
-      const model = await this.selectBestModel('security vulnerability code analysis');
+      // Select model optimized for security and performance analysis
+      const model = await this.selectBestModel('security vulnerability performance race condition code analysis');
       const temperature = 0.2; // Very low temperature for accurate security analysis
       const max_tokens = 8192; // Higher limit for comprehensive security reports
 
