@@ -1,0 +1,4 @@
+{
+  "summary": "Refatorado search_code_usage para retornar apenas dados estruturados em formato JSON limpo, removendo análise LLM desnecessária e formatação markdown. Agora retorna lista direta de ocorrências com arquivo, linha, tipo e código da linha específica, em formato otimizado para consumo por LLM.",
+  "current_status": "SearchCodeUsageTool agora retorna JSON estruturado simples com apenas os dados essenciais: term, total_occurrences e array de occurrences com file, line, type e code. Removida análise LLM e formatação desnecessária."
+}

@@ -4,7 +4,7 @@ export class RunCommandTool extends BaseTool {
   getToolDefinition() {
     return {
       name: 'run_command',
-      description: 'Runs a terminal command in a specific directory and returns only a summary result to minimize IDE token usage.',
+      description: 'Runs a terminal command in a specific directory and returns the command output.',
       inputSchema: {
         type: 'object',
         properties: {
@@ -18,8 +18,8 @@ export class RunCommandTool extends BaseTool {
           },
           summary_only: {
             type: 'boolean',
-            description: 'Return only summary (success/error) instead of full output',
-            default: true,
+            description: 'Return only summary (success/error) instead of full output. Set to true to minimize token usage.',
+            default: false,
           },
         },
         required: ['command', 'directory'],
@@ -28,7 +28,7 @@ export class RunCommandTool extends BaseTool {
   }
 
   async handle(args) {
-    const { command, directory, summary_only = true } = args;
+    const { command, directory, summary_only = false } = args;
 
     if (!command || typeof command !== 'string') {
       throw new Error('Command is required and must be a string');
@@ -76,13 +76,20 @@ export class RunCommandTool extends BaseTool {
               ],
             });
           } else {
-            // Return full output (not recommended for token economy)
-            const fullOutput = output + (errorOutput ? `\nErrors: ${errorOutput}` : '');
+            // Return full output with exit code information
+            let fullOutput = output;
+            if (errorOutput) {
+              fullOutput += (fullOutput ? '\n' : '') + errorOutput;
+            }
+            if (code !== 0) {
+              fullOutput += (fullOutput ? '\n' : '') + `[Exit code: ${code}]`;
+            }
+            
             resolve({
               content: [
                 {
                   type: 'text',
-                  text: fullOutput,
+                  text: fullOutput || '',
                 },
               ],
             });

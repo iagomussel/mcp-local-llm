@@ -88,6 +88,7 @@ export class SearchCodeUsageTool extends BaseTool {
 
       // Search for term usage in all files
       const results = [];
+      const fileContents = new Map();
       let totalMatches = 0;
 
       for (const filePath of files) {
@@ -95,6 +96,7 @@ export class SearchCodeUsageTool extends BaseTool {
         
         try {
           const content = await fs.readFile(filePath, 'utf8');
+          fileContents.set(filePath, content);
           const matches = await this.parseFileForTerm(filePath, content, term, {
             include_declarations,
             include_usages,
@@ -116,38 +118,27 @@ export class SearchCodeUsageTool extends BaseTool {
         }
       }
 
-      // Generate summary using LLM
-      const model = await this.selectBestModel('code analysis usage search');
-      const summaryPrompt = `Analyze the following code usage search results and provide a comprehensive summary:
-
-Search Term: ${term}
-Root Path: ${root_path}
-Total Files Searched: ${files.length}
-Total Matches Found: ${totalMatches}
-
-Results:
-${results.map(r => `\nFile: ${r.file}\nMatches: ${r.total_matches}\n${r.matches.map(m => `  Line ${m.line}: ${m.type} - ${m.context}`).join('\n')}`).join('\n')}
-
-Please provide:
-1. Summary of where the term is used
-2. Types of usage (declarations, function calls, variable references, etc.)
-3. Most common usage patterns
-4. Potential issues or recommendations`;
-
-      const response = await this.callModelRunner({
-        model,
-        messages: [{ role: 'user', content: summaryPrompt }],
-        temperature: 0.3,
-        max_tokens: 600,
+      // Format results as structured data for LLM consumption
+      const structuredResults = results.flatMap(r => {
+        const content = fileContents.get(r.file);
+        const lines = content ? content.split('\n') : [];
+        return r.matches.map(m => ({
+          file: r.file,
+          line: m.line,
+          type: m.type,
+          code: lines[m.line - 1] ? lines[m.line - 1].trim() : ''
+        }));
       });
-
-      const analysis = response.choices?.[0]?.message?.content || 'No analysis generated';
 
       return {
         content: [
           {
             type: 'text',
-            text: `🔍 **Code Usage Analysis**\n\n**Term:** \`${term}\`\n**Directory:** ${root_path}\n**Files analyzed:** ${files.length}\n**Total occurrences:** ${totalMatches}\n\n**Results:**\n${results.map(r => `\n📄 **${r.file}** (${r.total_matches} occurrences)\n${r.matches.map(m => `  ${m.line}: ${m.type} - ${m.context}`).join('\n')}`).join('\n')}\n\n**LLM Analysis:**\n${analysis}`,
+            text: JSON.stringify({
+              term,
+              total_occurrences: totalMatches,
+              occurrences: structuredResults
+            }, null, 2),
           },
         ],
       };
@@ -215,7 +206,7 @@ Please provide:
           const isUsage = pattern.type === 'usage';
           
           if ((isDeclaration && include_declarations) || (isUsage && include_usages)) {
-            // Get context around the match
+            // Get minimal context - just the line with the match
             const startLine = Math.max(0, i - context_lines);
             const endLine = Math.min(lines.length - 1, i + context_lines);
             const context = lines.slice(startLine, endLine + 1).join('\n');

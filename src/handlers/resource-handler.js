@@ -1,4 +1,8 @@
-import { ListResourcesRequestSchema, ReadResourceRequestSchema } from '@modelcontextprotocol/sdk/types.js';
+import { 
+  ListResourcesRequestSchema, 
+  ReadResourceRequestSchema,
+  ListResourceTemplatesRequestSchema 
+} from '@modelcontextprotocol/sdk/types.js';
 import { CONFIG } from '../config/index.js';
 import { getPromptList } from '../prompts/index.js';
 
@@ -63,6 +67,13 @@ export class ResourceHandler {
       } catch (error) {
         throw new Error(`Failed to read resource: ${error.message}`);
       }
+    });
+
+    // List resource templates (for parameterized resources)
+    this.server.setRequestHandler(ListResourceTemplatesRequestSchema, async () => {
+      return {
+        resourceTemplates: [],
+      };
     });
   }
 
