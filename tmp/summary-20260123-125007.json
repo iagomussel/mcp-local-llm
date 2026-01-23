@@ -1,4 +1,0 @@
-{
-  "summary": "Updated run_command tool to return actual command output by default instead of summary. Changed summary_only default from true to false, updated description, and improved output formatting to include stdout, stderr, and exit code information.",
-  "current_status": "RunCommandTool now returns full command output by default. Users can still opt-in to summary mode by setting summary_only=true for token economy when needed."
-}

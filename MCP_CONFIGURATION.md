@@ -47,7 +47,8 @@ AdapterFactory creates adapter
         "OLLAMA_URL": "http://localhost:11434",
         "MODEL_NAME": "llama3",
         "MAX_TOKENS": "256",
-        "TEMPERATURE": "0.7"
+        "TEMPERATURE": "0.7",
+        "DISABLE_CHAT_SUMMARY_RULE": "false"
       }
     }
   }
@@ -95,6 +96,23 @@ AdapterFactory creates adapter
   }
 }
 ```
+
+### Feature Flags
+
+The server supports feature flags via environment variables:
+
+**Disable Chat Summary Rule:**
+```json
+{
+  "env": {
+    "DISABLE_CHAT_SUMMARY_RULE": "true"
+  }
+}
+```
+
+When `DISABLE_CHAT_SUMMARY_RULE` is set to `"true"` or `"1"`, the `chat_end_summary_rule` prompt will not be available. This prompt automatically stores chat summaries at the end of each conversation turn using the `memory_store` tool.
+
+**Default:** The chat summary rule is **enabled** by default (prompt is available).
 
 ### Using Google Gemini
 
@@ -162,6 +180,12 @@ AdapterFactory creates adapter
 |----------|---------|-------------|
 | `MAX_TOKENS` | `256` | Maximum tokens per response |
 | `TEMPERATURE` | `0.7` | Temperature for generation |
+
+### Feature Flags
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DISABLE_CHAT_SUMMARY_RULE` | `false` | Set to `"true"` or `"1"` to disable the `chat_end_summary_rule` prompt. This prompt automatically stores chat summaries at the end of each conversation turn using the `memory_store` tool. |
 
 ## How the Server Processes Configuration
 

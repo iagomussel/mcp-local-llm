@@ -216,6 +216,9 @@ The server provides MCP prompts that inject dynamic instructions into Cursor:
 2. **`token_economy_guidelines`**: Guidelines for maximizing token savings
 3. **`thinking_layer_instructions`**: Instructions for using the thinking layer
 4. **`context_compression_rules`**: Rules for using context compression tools
+5. **`chat_end_summary_rule`**: Automatically stores chat summaries using memory_store tool (can be disabled via `DISABLE_CHAT_SUMMARY_RULE`)
+
+**Note:** The `chat_end_summary_rule` prompt is automatically available to all projects using this MCP server. To disable it, set the environment variable `DISABLE_CHAT_SUMMARY_RULE=true` in your MCP configuration.
 
 ### Available Resources
 

@@ -29,6 +29,9 @@ export const CONFIG = {
   DEFAULT_MODEL: process.env.MODEL_NAME || null, // Provider-specific default will be used if null
   MAX_TOKENS: parseInt(process.env.MAX_TOKENS) || 256,
   TEMPERATURE: parseFloat(process.env.TEMPERATURE) || 0.7,
+  
+  // Feature flags
+  DISABLE_CHAT_SUMMARY_RULE: process.env.DISABLE_CHAT_SUMMARY_RULE === 'true' || process.env.DISABLE_CHAT_SUMMARY_RULE === '1',
 };
 
 /**

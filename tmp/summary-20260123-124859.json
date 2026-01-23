@@ -1,4 +1,0 @@
-{
-  "summary": "Fixed MCP error -32601 (Method not found) by adding the missing ListResourceTemplatesRequestSchema handler in resource-handler.js. The MCP SDK expects a resources/templates/list method handler, which was not implemented. Added the handler to return an empty array of resource templates, resolving the client error.",
-  "current_status": "Resource handler now properly implements all required MCP resource methods: resources/list, resources/read, and resources/templates/list. The server should no longer throw Method not found errors when clients query for resource templates."
-}
