@@ -21,6 +21,7 @@ const testFiles = [
   'test/unit/humanize-content-tool.test.js',
   'test/unit/check-llm-status-tool.test.js',
   'test/unit/memory-tools.test.js',
+  'test/unit/gemini-adapter.test.js',
   // Integration tests
   'test/integration/all-tools.test.js',
   'test/integration/server-initialization.test.js',

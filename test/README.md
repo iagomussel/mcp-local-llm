@@ -13,6 +13,7 @@ The test suite is organized into the following directories:
   - `check-llm-status-tool.test.js` - Tests for CheckLLMStatusTool
   - `humanize-content-tool.test.js` - Tests for HumanizeContentTool
   - `memory-tools.test.js` - Tests for memory-related tools
+  - `gemini-adapter.test.js` - Tests for GeminiAdapter
 
 - **`integration/`** - Integration tests for MCP server
   - `server.test.js` - Tests for MCP protocol compliance
@@ -42,6 +43,7 @@ The test suite is organized into the following directories:
   - `test-ide-token-economy.js` - IDE token economy tests
   - `test-optional-lines.js` - Optional lines feature tests
   - `test-realistic-tokens.js` - Realistic token usage tests
+  - `test-gemini-adapter.js` - Gemini adapter integration tests
 
 - **`demos/`** - Demo scripts showcasing features
   - `demo-ide-token-savings.js` - Demonstrates token savings in IDE

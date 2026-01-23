@@ -33,21 +33,58 @@ A Model Context Protocol (MCP) server that uses Ollama as a context preprocessor
 
 ## Configuration
 
-The server can be configured using environment variables:
+The server can be configured using environment variables in the MCP client configuration file.
+
+### Provider Selection
+
+Set `LLM_PROVIDER` to choose which LLM provider to use:
 
 ```bash
-# Ollama server URL (default: http://localhost:11434)
+# Select provider: 'ollama', 'openai', 'anthropic', or 'gemini'
+export LLM_PROVIDER=ollama
+```
+
+### Provider-Specific Configuration
+
+**Ollama (default):**
+```bash
+export LLM_PROVIDER=ollama
 export OLLAMA_URL=http://localhost:11434
-
-# Default model to use (default: llama3)
 export MODEL_NAME=llama3
+```
 
+**OpenAI:**
+```bash
+export LLM_PROVIDER=openai
+export OPENAI_API_KEY=sk-your-api-key
+export MODEL_NAME=gpt-3.5-turbo
+```
+
+**Anthropic:**
+```bash
+export LLM_PROVIDER=anthropic
+export ANTHROPIC_API_KEY=sk-ant-your-api-key
+export MODEL_NAME=claude-3-haiku-20240307
+```
+
+**Gemini:**
+```bash
+export LLM_PROVIDER=gemini
+export GEMINI_API_KEY=your-api-key
+export MODEL_NAME=gemini-1.5-flash
+```
+
+### Common Settings
+
+```bash
 # Maximum tokens in response (default: 256)
 export MAX_TOKENS=256
 
 # Temperature for response generation (default: 0.7)
 export TEMPERATURE=0.7
 ```
+
+See [MCP_CONFIGURATION.md](./MCP_CONFIGURATION.md) for detailed configuration examples.
 
 ## Usage
 
@@ -202,7 +239,9 @@ The server exposes read-only resources via MCP:
 
 ## MCP Client Integration
 
-To use this server with an MCP client (like Cursor), add it to your client configuration:
+To use this server with an MCP client (like Cursor), add it to your client configuration.
+
+### Basic Configuration (Ollama)
 
 ```json
 {
@@ -211,6 +250,7 @@ To use this server with an MCP client (like Cursor), add it to your client confi
       "command": "node",
       "args": ["path/to/your/mcp-local-llm/src/index.js"],
       "env": {
+        "LLM_PROVIDER": "ollama",
         "OLLAMA_URL": "http://localhost:11434",
         "MODEL_NAME": "llama3"
       }
@@ -218,6 +258,45 @@ To use this server with an MCP client (like Cursor), add it to your client confi
   }
 }
 ```
+
+### Using Different Providers
+
+The server supports multiple LLM providers. Set `LLM_PROVIDER` to switch:
+
+**OpenAI:**
+```json
+{
+  "env": {
+    "LLM_PROVIDER": "openai",
+    "OPENAI_API_KEY": "sk-your-key",
+    "MODEL_NAME": "gpt-3.5-turbo"
+  }
+}
+```
+
+**Anthropic:**
+```json
+{
+  "env": {
+    "LLM_PROVIDER": "anthropic",
+    "ANTHROPIC_API_KEY": "sk-ant-your-key",
+    "MODEL_NAME": "claude-3-haiku-20240307"
+  }
+}
+```
+
+**Gemini:**
+```json
+{
+  "env": {
+    "LLM_PROVIDER": "gemini",
+    "GEMINI_API_KEY": "your-key",
+    "MODEL_NAME": "gemini-1.5-flash"
+  }
+}
+```
+
+See [MCP_CONFIGURATION.md](./MCP_CONFIGURATION.md) for complete configuration guide.
 
 ## Troubleshooting
 
