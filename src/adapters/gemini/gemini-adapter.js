@@ -50,54 +50,32 @@ export class GeminiAdapter extends BaseAdapter {
         }
       );
 
-      // Check if response is valid
       if (!response.data) {
-        console.error('[MCP] Gemini API returned empty response');
         return CONSTANTS.MODELS;
       }
 
       const models = response.data?.models || [];
       
-      // If no models returned, use fallback
       if (models.length === 0) {
-        console.error('[MCP] No models returned from Gemini API, using fallback list');
         return CONSTANTS.MODELS;
       }
       
-      // Gemini API returns model names with 'models/' prefix
-      // We need to strip it and match against our known models
       const availableModels = models
         .map(model => {
-          // Extract model name without 'models/' prefix
           const cleanName = model.name?.replace(/^models\//, '') || '';
           return cleanName;
         })
         .filter(cleanName => {
-          // Filter to only include known Gemini models
           return cleanName && CONSTANTS.MODELS.includes(cleanName);
         })
         .sort();
       
-      // If filtering resulted in no models, return all known models
       if (availableModels.length === 0) {
-        console.error('[MCP] No matching models found, using fallback list');
         return CONSTANTS.MODELS;
       }
       
       return availableModels;
     } catch (error) {
-      console.error('[MCP] Failed to get available models from Gemini:', error.message);
-      if (error.response) {
-        console.error('[MCP] Gemini API Response Status:', error.response.status);
-        // Only log response data if it's not too large
-        const responseData = error.response.data;
-        if (responseData && typeof responseData === 'object') {
-          console.error('[MCP] Gemini API Response Data:', JSON.stringify(responseData, null, 2));
-        } else if (responseData && typeof responseData === 'string' && responseData.length < 500) {
-          console.error('[MCP] Gemini API Response Data:', responseData);
-        }
-      }
-      // Return known models as fallback
       return CONSTANTS.MODELS;
     }
   }
@@ -130,15 +108,6 @@ export class GeminiAdapter extends BaseAdapter {
         },
       };
 
-      // Always log URL and model for debugging (stderr won't interfere with MCP protocol)
-      console.error(`[MCP] Gemini API Request: ${url}`);
-      console.error(`[MCP] Gemini Model: ${cleanModel}`);
-      
-      // Detailed logging only if DEBUG env var is set
-      if (process.env.DEBUG === 'true') {
-        console.error(`[MCP] Gemini Request Body: ${JSON.stringify(requestBody, null, 2)}`);
-      }
-
       const response = await axios.post(
         url,
         requestBody,
@@ -148,23 +117,15 @@ export class GeminiAdapter extends BaseAdapter {
         }
       );
 
-      // Transform Gemini response to standardized format
       return this.transformResponse(response.data);
     } catch (error) {
-      console.error('[MCP] Error calling Gemini:', error.message);
-      if (error.response) {
-        console.error('[MCP] Gemini API Response Status:', error.response.status);
-        console.error('[MCP] Gemini API Response Data:', JSON.stringify(error.response.data, null, 2));
-        console.error('[MCP] Gemini API Request URL:', error.config?.url);
-        console.error('[MCP] Gemini API Request Headers:', JSON.stringify(error.config?.headers, null, 2));
-      }
       if (error.response?.status === 401 || error.response?.status === 403) {
         throw new Error(ERRORS.INVALID_API_KEY('Gemini'));
       }
       if (error.response?.status === 404) {
         const model = payload.model || this.getDefaultModel();
         const cleanModel = model.replace(/^models\//, '');
-        throw new Error(`Gemini API endpoint not found. URL: ${error.config?.url || url}, Model: ${cleanModel}. Check if model name is correct.`);
+        throw new Error(`Gemini API endpoint not found. Model: ${cleanModel}. Check if model name is correct.`);
       }
       if (error.response?.status === 429) {
         throw new Error(ERRORS.RATE_LIMIT_EXCEEDED('Gemini'));

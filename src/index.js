@@ -71,33 +71,9 @@ class LocalLLMServer {
    */
   async initializeModels() {
     try {
-      const provider = this.config.LLM_PROVIDER || 'ollama';
-      console.error(`[MCP] Using LLM provider: ${provider}`);
-      
-      const availableModels = await this.llmService.getAvailableModels();
-      
-      if (availableModels.length === 0) {
-        console.error(`[MCP] Warning: No models found for provider: ${provider}`);
-        if (provider === 'ollama') {
-          console.error('[MCP] Install a model with: ollama pull llama3');
-        } else {
-          console.error(`[MCP] Check your ${provider} API key and configuration`);
-        }
-      } else {
-        console.error(`[MCP] Found ${availableModels.length} models for ${provider}`);
-      }
+      await this.llmService.getAvailableModels();
     } catch (error) {
-      console.error('[MCP] Failed to initialize models:', error.message);
-      const provider = this.config.LLM_PROVIDER || 'ollama';
-      if (provider === 'ollama') {
-        console.error('[MCP] Make sure Ollama is running at', CONFIG.OLLAMA_URL);
-      } else if (provider === 'gemini') {
-        console.error('[MCP] Check your GEMINI_API_KEY and ensure it has proper permissions');
-        console.error('[MCP] The server will continue to run, but model listing may be unavailable');
-      } else {
-        console.error(`[MCP] Check your ${provider} API key and configuration`);
-      }
-      // Don't throw - allow server to continue running even if model initialization fails
+      // Silent failure - server continues running
     }
   }
 
@@ -106,8 +82,7 @@ class LocalLLMServer {
    */
   setupErrorHandling() {
     this.server.onerror = (error) => {
-      // Log to stderr only
-      console.error('[MCP] Server error:', error.message);
+      // Silent error handling
     };
 
     process.on('SIGINT', async () => {
@@ -141,36 +116,27 @@ class LocalLLMServer {
    */
   async detectClientWorkdir() {
     try {
-      // Option 3: Try to get from MCP Roots if client supports it
-      // Note: MCP Roots are provided by the client during initialization
-      // If the SDK exposes them, we can access them here
-      // For now, we'll check if roots are available through the server instance
       if (this.server && typeof this.server.requestRoots === 'function') {
         try {
           const roots = await this.server.requestRoots();
           if (roots && roots.length > 0 && roots[0].uri) {
-            // Convert file:// URI to path if needed
             let workdir = roots[0].uri;
             if (workdir.startsWith('file://')) {
               workdir = decodeURIComponent(workdir.replace('file://', ''));
             }
             CONFIG.CLIENT_WORKDIR = workdir;
             CONFIG.WORKDIR_SOURCE = 'mcp_roots';
-            console.error(`[MCP] Client workdir detected from MCP Roots: ${workdir}`);
             return;
           }
         } catch (error) {
-          // MCP Roots not available or failed, fallback to process.cwd()
+          // MCP Roots not available, fallback
         }
       }
       
-      // Option 2: Fallback to process.cwd()
       CONFIG.CLIENT_WORKDIR = process.cwd();
       CONFIG.WORKDIR_SOURCE = 'process.cwd()';
-      console.error(`[MCP] Client workdir defaulted to process.cwd(): ${CONFIG.CLIENT_WORKDIR}`);
     } catch (error) {
-      // If detection fails, keep the fallback value
-      console.error('[MCP] Failed to detect client workdir:', error.message);
+      // Silent failure
     }
   }
 

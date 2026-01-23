@@ -19,12 +19,9 @@ export class LLMService {
     try {
       const provider = this.config.LLM_PROVIDER || 'ollama';
       this.adapter = adapterFactory.createAdapter(provider, this.config);
-      // Don't log during initialization - it interferes with MCP protocol
     } catch (error) {
-      console.error(`[MCP] Failed to initialize adapter: ${error.message}`);
       // Fallback to Ollama if configured provider fails
       if (this.config.LLM_PROVIDER !== 'ollama') {
-        console.error('[MCP] Falling back to Ollama');
         this.adapter = adapterFactory.createAdapter('ollama', this.config);
       } else {
         throw error;

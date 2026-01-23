@@ -1,7 +1,11 @@
 import { config } from 'dotenv';
 
-// Load environment variables from .env file
+// Load environment variables from .env file silently
+// CRITICAL: Any output to stdout will break MCP JSON-RPC protocol
+const originalConsoleLog = console.log;
+console.log = () => {}; // Temporarily disable console.log
 config({ debug: false });
+console.log = originalConsoleLog; // Restore console.log
 
 /**
  * Server configuration loaded from environment variables
