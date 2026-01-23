@@ -32,6 +32,11 @@ export const CONFIG = {
   
   // Feature flags
   DISABLE_CHAT_SUMMARY_RULE: process.env.DISABLE_CHAT_SUMMARY_RULE === 'true' || process.env.DISABLE_CHAT_SUMMARY_RULE === '1',
+  
+  // Client workspace directory detection
+  // Option 2: Fallback to process.cwd() (will be updated if MCP Roots available)
+  CLIENT_WORKDIR: process.cwd(),
+  WORKDIR_SOURCE: 'process.cwd()',
 };
 
 /**

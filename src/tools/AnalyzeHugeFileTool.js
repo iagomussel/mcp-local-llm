@@ -32,28 +32,60 @@ export class AnalyzeHugeFileTool extends BaseTool {
       const lines = content.split('\n');
       const lineCount = lines.length;
 
-      // System prompt for structured analysis
-      const systemPrompt = `You are a technical data processor. Analyze the provided file and return ONLY a structured summary in JSON with:
-- architecture: overall code structure
-- global_variables: list of global variables
-- entry_points: main functions and entry points
-- main_logic: summary of logic in 3-5 lines
-- original_size: number of lines
+      // For very large files, sample strategically to stay within context limits
+      // Estimate: ~4 tokens per line, keep under ~100k tokens input (~25k lines)
+      const MAX_LINES_TO_SEND = 25000;
+      let contentToAnalyze = content;
+      let samplingInfo = '';
 
-Do not use greetings. Be technical and concise. If the file is very long, focus on function definitions and structure.`;
+      if (lineCount > MAX_LINES_TO_SEND) {
+        // Sample: first 10%, middle 10%, last 10%, and all function/class definitions
+        const sampleSize = Math.floor(MAX_LINES_TO_SEND * 0.1);
+        const firstSample = lines.slice(0, sampleSize).join('\n');
+        const middleStart = Math.floor(lineCount / 2) - Math.floor(sampleSize / 2);
+        const middleSample = lines.slice(middleStart, middleStart + sampleSize).join('\n');
+        const lastSample = lines.slice(-sampleSize).join('\n');
+        
+        // Extract function/class definitions (common patterns)
+        const definitions = lines.filter(line => 
+          /^\s*(export\s+)?(function|class|const|let|var)\s+\w+|^\s*(export\s+)?(async\s+)?function\s*\w+|^\s*class\s+\w+/.test(line)
+        ).slice(0, sampleSize).join('\n');
+        
+        contentToAnalyze = [
+          firstSample,
+          '... [middle section] ...',
+          middleSample,
+          '... [function/class definitions] ...',
+          definitions,
+          '... [end section] ...',
+          lastSample
+        ].filter(Boolean).join('\n');
+        
+        samplingInfo = ` (sampled from ${lineCount} total lines due to size)`;
+      }
 
-      const userPrompt = `Analyze the following file (${lineCount} lines):
+      // System prompt for structured analysis - direct JSON output only
+      const systemPrompt = `Analyze code as a senior technical consultant and return ONLY valid JSON. No explanations, markdown blocks, or text outside JSON. Start response with { and end with }.
 
-\`\`\`
-${content}
-\`\`\`
+Required JSON structure:
+{
+  "architecture": "code structure",
+  "global_variables": ["name1", "name2"],
+  "entry_points": ["function1", "function2"],
+  "main_logic": "brief summary",
+  "original_size": ${lineCount}
+}`;
 
-Return only the structured JSON as specified.`;
+      const userPrompt = `Analyze this code (${lineCount} lines${samplingInfo}):
+
+${contentToAnalyze}`;
 
       // Select model optimized for code analysis
       const model = await this.selectBestModel('code analysis architecture');
       const temperature = 0.3; // Low temperature for technical accuracy
-      const max_tokens = 512; // Enough for structured summary
+      // Use higher token limit for comprehensive structured analysis
+      // For large files, we need enough tokens for complete JSON response
+      const max_tokens = 10*4096; // Increased for complete JSON analysis
 
       const response = await this.callModelRunner({
         model,
@@ -85,7 +117,14 @@ Return only the structured JSON as specified.`;
           parsedResult = JSON.parse(result);
         }
       } catch (e) {
-        // If parsing fails, return the raw result
+        // Check if JSON appears incomplete (common when truncated)
+        if (result.trim().endsWith('...') || 
+            (result.includes('{') && !result.includes('}')) ||
+            (result.match(/\{/g)?.length !== result.match(/\}/g)?.length)) {
+          // JSON appears incomplete - return error with partial result
+          throw new Error(`JSON response appears incomplete (possibly truncated). Partial response: ${result.substring(0, 500)}...`);
+        }
+        // If parsing fails for other reasons, return the raw result
         parsedResult = result;
       }
 

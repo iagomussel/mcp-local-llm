@@ -119,6 +119,8 @@ export class ResourceHandler {
             default_model: this.llmService.getDefaultModel(),
             max_tokens: CONFIG.MAX_TOKENS,
             temperature: CONFIG.TEMPERATURE,
+            client_workdir: CONFIG.CLIENT_WORKDIR,
+            workdir_source: CONFIG.WORKDIR_SOURCE,
           }, null, 2),
         },
       ],

@@ -16,6 +16,7 @@ import { DebuggerTool } from './DebuggerTool.js';
 import { GitDiffFileTool } from './GitDiffFileTool.js';
 import { SearchCodeUsageTool } from './SearchCodeUsageTool.js';
 import { AnalyzeHugeFileTool } from './AnalyzeHugeFileTool.js';
+import { SecurityScannerTool } from './SecurityScannerTool.js';
 import { DigestErrorLogsTool } from './DigestErrorLogsTool.js';
 import { CodebaseDiscoveryTool } from './CodebaseDiscoveryTool.js';
 import { ThinkThroughTool } from './ThinkThroughTool.js';
@@ -52,6 +53,7 @@ export { DebuggerTool };
 export { GitDiffFileTool };
 export { SearchCodeUsageTool };
 export { AnalyzeHugeFileTool };
+export { SecurityScannerTool };
 export { DigestErrorLogsTool };
 export { CodebaseDiscoveryTool };
 export { ThinkThroughTool };
@@ -88,6 +90,7 @@ export const ALL_TOOLS = [
   GitDiffFileTool,
   SearchCodeUsageTool,
   AnalyzeHugeFileTool,
+  SecurityScannerTool,
   DigestErrorLogsTool,
   CodebaseDiscoveryTool,
   ThinkThroughTool,

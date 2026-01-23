@@ -114,8 +114,52 @@ class LocalLLMServer {
   async run() {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
+    
+    // Try to detect client workdir after connection
+    await this.detectClientWorkdir();
+    
     // Don't log to stdout/stderr - MCP protocol uses stdio for JSON-RPC
     // Any logging should be minimal and to stderr only
+  }
+
+  /**
+   * Detect client workspace directory
+   * Option 3: Try MCP Roots first (if client supports it)
+   * Option 2: Fallback to process.cwd()
+   */
+  async detectClientWorkdir() {
+    try {
+      // Option 3: Try to get from MCP Roots if client supports it
+      // Note: MCP Roots are provided by the client during initialization
+      // If the SDK exposes them, we can access them here
+      // For now, we'll check if roots are available through the server instance
+      if (this.server && typeof this.server.requestRoots === 'function') {
+        try {
+          const roots = await this.server.requestRoots();
+          if (roots && roots.length > 0 && roots[0].uri) {
+            // Convert file:// URI to path if needed
+            let workdir = roots[0].uri;
+            if (workdir.startsWith('file://')) {
+              workdir = decodeURIComponent(workdir.replace('file://', ''));
+            }
+            CONFIG.CLIENT_WORKDIR = workdir;
+            CONFIG.WORKDIR_SOURCE = 'mcp_roots';
+            console.error(`[MCP] Client workdir detected from MCP Roots: ${workdir}`);
+            return;
+          }
+        } catch (error) {
+          // MCP Roots not available or failed, fallback to process.cwd()
+        }
+      }
+      
+      // Option 2: Fallback to process.cwd()
+      CONFIG.CLIENT_WORKDIR = process.cwd();
+      CONFIG.WORKDIR_SOURCE = 'process.cwd()';
+      console.error(`[MCP] Client workdir defaulted to process.cwd(): ${CONFIG.CLIENT_WORKDIR}`);
+    } catch (error) {
+      // If detection fails, keep the fallback value
+      console.error('[MCP] Failed to detect client workdir:', error.message);
+    }
   }
 
   // Expose services and utilities for tools
