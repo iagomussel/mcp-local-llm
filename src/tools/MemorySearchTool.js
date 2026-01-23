@@ -1,14 +1,5 @@
 import { BaseTool } from './BaseTool.js';
-import { MemoryStore } from '../memory/MemoryStore.js';
-
-let memoryStoreInstance = null;
-
-function getMemoryStore() {
-  if (!memoryStoreInstance) {
-    memoryStoreInstance = new MemoryStore();
-  }
-  return memoryStoreInstance;
-}
+import { getMemoryStore } from '../memory/MemoryStoreSingleton.js';
 
 export class MemorySearchTool extends BaseTool {
   getToolDefinition() {
@@ -49,7 +40,7 @@ export class MemorySearchTool extends BaseTool {
     const { query = '', tags, category, metadata_filter = {}, limit = 10 } = args;
 
     try {
-      const store = getMemoryStore();
+      const store = await getMemoryStore();
       
       const metadataFilter = { ...metadata_filter };
       if (category) {

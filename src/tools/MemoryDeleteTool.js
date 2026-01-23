@@ -1,14 +1,5 @@
 import { BaseTool } from './BaseTool.js';
-import { MemoryStore } from '../memory/MemoryStore.js';
-
-let memoryStoreInstance = null;
-
-function getMemoryStore() {
-  if (!memoryStoreInstance) {
-    memoryStoreInstance = new MemoryStore();
-  }
-  return memoryStoreInstance;
-}
+import { getMemoryStore } from '../memory/MemoryStoreSingleton.js';
 
 export class MemoryDeleteTool extends BaseTool {
   getToolDefinition() {
@@ -39,7 +30,7 @@ export class MemoryDeleteTool extends BaseTool {
     }
 
     try {
-      const store = getMemoryStore();
+      const store = await getMemoryStore();
       let deleted = false;
       let count = 0;
 

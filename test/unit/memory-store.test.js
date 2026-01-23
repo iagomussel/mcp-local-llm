@@ -15,7 +15,7 @@ const getTempStoragePath = () => {
 
 test('MemoryStore should initialize with default path', async () => {
   const store = new MemoryStore();
-  await new Promise(resolve => setTimeout(resolve, 100)); // Wait for async init
+  await store.ensureInitialized();
   
   assert.ok(store);
   assert.strictEqual(typeof store.store, 'function');
@@ -24,7 +24,7 @@ test('MemoryStore should initialize with default path', async () => {
 test('MemoryStore should initialize with custom path', async () => {
   const storagePath = getTempStoragePath();
   const store = new MemoryStore(storagePath);
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await store.ensureInitialized();
   
   assert.ok(store);
   assert.strictEqual(store.storagePath, storagePath);
@@ -41,7 +41,7 @@ test('MemoryStore should initialize with custom path', async () => {
 test('MemoryStore should store and retrieve memories', async () => {
   const storagePath = getTempStoragePath();
   const store = new MemoryStore(storagePath);
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await store.ensureInitialized();
   
   const memory = await store.store('test-key', 'test content', { tag: 'test' });
   
@@ -66,7 +66,7 @@ test('MemoryStore should store and retrieve memories', async () => {
 test('MemoryStore should get memory by ID', async () => {
   const storagePath = getTempStoragePath();
   const store = new MemoryStore(storagePath);
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await store.ensureInitialized();
   
   const memory = await store.store('test-key', 'test content');
   const retrieved = await store.getById(memory.id);
@@ -87,7 +87,7 @@ test('MemoryStore should get memory by ID', async () => {
 test('MemoryStore should search memories', async () => {
   const storagePath = getTempStoragePath();
   const store = new MemoryStore(storagePath);
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await store.ensureInitialized();
   
   await store.store('key1', 'content about testing', { tags: ['test'] });
   await store.store('key2', 'content about coding', { tags: ['code'] });
@@ -111,7 +111,7 @@ test('MemoryStore should search memories', async () => {
 test('MemoryStore should update memories', async () => {
   const storagePath = getTempStoragePath();
   const store = new MemoryStore(storagePath);
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await store.ensureInitialized();
   
   const memory = await store.store('test-key', 'original content');
   const updated = await store.update(memory.id, { content: 'updated content' });
@@ -131,7 +131,7 @@ test('MemoryStore should update memories', async () => {
 test('MemoryStore should delete memories', async () => {
   const storagePath = getTempStoragePath();
   const store = new MemoryStore(storagePath);
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await store.ensureInitialized();
   
   const memory = await store.store('test-key', 'test content');
   const deleted = await store.delete(memory.id);
@@ -153,7 +153,7 @@ test('MemoryStore should delete memories', async () => {
 test('MemoryStore should count memories', async () => {
   const storagePath = getTempStoragePath();
   const store = new MemoryStore(storagePath);
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await store.ensureInitialized();
   
   await store.store('key1', 'content1');
   await store.store('key2', 'content2');

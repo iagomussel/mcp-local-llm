@@ -1,14 +1,5 @@
 import { BaseTool } from './BaseTool.js';
-import { MemoryStore } from '../memory/MemoryStore.js';
-
-let memoryStoreInstance = null;
-
-function getMemoryStore() {
-  if (!memoryStoreInstance) {
-    memoryStoreInstance = new MemoryStore();
-  }
-  return memoryStoreInstance;
-}
+import { getMemoryStore } from '../memory/MemoryStoreSingleton.js';
 
 export class MemoryRetrieveTool extends BaseTool {
   getToolDefinition() {
@@ -53,7 +44,7 @@ export class MemoryRetrieveTool extends BaseTool {
     const { key, id, query, tags, category, limit = 10 } = args;
 
     try {
-      const store = getMemoryStore();
+      const store = await getMemoryStore();
       let results = [];
 
       if (id) {

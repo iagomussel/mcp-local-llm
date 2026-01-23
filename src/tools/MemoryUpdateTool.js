@@ -1,14 +1,5 @@
 import { BaseTool } from './BaseTool.js';
-import { MemoryStore } from '../memory/MemoryStore.js';
-
-let memoryStoreInstance = null;
-
-function getMemoryStore() {
-  if (!memoryStoreInstance) {
-    memoryStoreInstance = new MemoryStore();
-  }
-  return memoryStoreInstance;
-}
+import { getMemoryStore } from '../memory/MemoryStoreSingleton.js';
 
 export class MemoryUpdateTool extends BaseTool {
   getToolDefinition() {
@@ -53,7 +44,7 @@ export class MemoryUpdateTool extends BaseTool {
     }
 
     try {
-      const store = getMemoryStore();
+      const store = await getMemoryStore();
       const updates = {};
 
       if (content !== undefined) {

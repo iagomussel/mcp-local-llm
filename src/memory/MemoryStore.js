@@ -7,10 +7,25 @@ export class MemoryStore {
     this.storagePath = storagePath;
     this.memoryFile = join(storagePath, 'memories.json');
     this.memories = new Map();
-    this.initialize();
+    this._initialized = false;
+    // Don't call initialize() here - it's async and should be awaited
+    // Callers should await initialize() explicitly
+  }
+  
+  /**
+   * Ensure the store is initialized
+   */
+  async ensureInitialized() {
+    if (!this._initialized) {
+      await this.initialize();
+    }
   }
 
   async initialize() {
+    if (this._initialized) {
+      return;
+    }
+    
     try {
       if (!existsSync(this.storagePath)) {
         await mkdir(this.storagePath, { recursive: true });
@@ -30,8 +45,10 @@ export class MemoryStore {
           });
         }
       }
+      this._initialized = true;
     } catch (error) {
       console.error('[MemoryStore] Failed to initialize:', error.message);
+      this._initialized = true; // Mark as initialized even on error to prevent retry loops
     }
   }
 
@@ -54,6 +71,8 @@ export class MemoryStore {
   }
 
   async store(key, content, metadata = {}) {
+    await this.ensureInitialized();
+    
     const id = this.generateId();
     const memory = {
       id,
@@ -72,15 +91,18 @@ export class MemoryStore {
   }
 
   async retrieve(key) {
+    await this.ensureInitialized();
     const memories = Array.from(this.memories.values());
     return memories.filter(m => m.key === key);
   }
 
   async getById(id) {
+    await this.ensureInitialized();
     return this.memories.get(id) || null;
   }
 
   async search(query, options = {}) {
+    await this.ensureInitialized();
     const { 
       limit = 10, 
       tags = [], 
@@ -126,6 +148,7 @@ export class MemoryStore {
   }
 
   async update(id, updates) {
+    await this.ensureInitialized();
     const memory = this.memories.get(id);
     if (!memory) {
       throw new Error(`Memory with id ${id} not found`);
@@ -147,6 +170,7 @@ export class MemoryStore {
   }
 
   async delete(id) {
+    await this.ensureInitialized();
     const memory = this.memories.get(id);
     if (!memory) {
       throw new Error(`Memory with id ${id} not found`);
@@ -158,6 +182,7 @@ export class MemoryStore {
   }
 
   async deleteByKey(key) {
+    await this.ensureInitialized();
     const memories = Array.from(this.memories.values());
     const toDelete = memories.filter(m => m.key === key);
     
@@ -167,14 +192,17 @@ export class MemoryStore {
   }
 
   async getAll() {
+    await this.ensureInitialized();
     return Array.from(this.memories.values());
   }
 
   async count() {
+    await this.ensureInitialized();
     return this.memories.size;
   }
 
   async clear() {
+    await this.ensureInitialized();
     this.memories.clear();
     await this.save();
     return true;

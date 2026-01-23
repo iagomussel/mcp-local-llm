@@ -16,30 +16,33 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 import { existsSync, unlinkSync, rmdirSync } from 'fs';
 
-// Reset memory store singleton before each test
-// Since MemoryStore is a singleton used by all tools, we need to clear it between tests
-// We'll use MemoryStoreTool to access the same singleton instance
+// Use a shared storage path for all tests to ensure they use the same file
+const TEST_STORAGE_PATH = './.memory-test';
+
+// Reset memory store before each test
+// Since each tool module has its own singleton, we need to clear the storage file
 async function resetMemoryStore() {
-  // Create a tool instance to trigger singleton creation
-  const mockServer = new MockServer();
-  const storeTool = new MemoryStoreTool(mockServer);
+  const { unlinkSync, existsSync, rmdirSync } = await import('fs');
+  const { join } = await import('path');
   
-  // Store and immediately delete a dummy memory to ensure store is initialized
-  try {
-    const response = await storeTool.handle({
-      key: '__test_init__',
-      content: '__init__',
-    });
-    const memoryId = JSON.parse(response.content[0].text).memory_id;
-    
-    // Now get the store and clear it
-    const { MemoryStore } = await import('../../src/memory/MemoryStore.js');
-    const store = new MemoryStore();
-    await new Promise(resolve => setTimeout(resolve, 100)); // Wait for init
-    await store.clear();
-  } catch (error) {
-    // If clearing fails, try to continue anyway
+  // Clear the test storage file
+  const memoryFile = join(TEST_STORAGE_PATH, 'memories.json');
+  if (existsSync(memoryFile)) {
+    try {
+      unlinkSync(memoryFile);
+    } catch {}
   }
+  
+  // Also clear the default storage for good measure
+  const defaultFile = join('./.memory', 'memories.json');
+  if (existsSync(defaultFile)) {
+    try {
+      unlinkSync(defaultFile);
+    } catch {}
+  }
+  
+  // Wait a bit for file system operations
+  await new Promise(resolve => setTimeout(resolve, 100));
 }
 
 test('MemoryStoreTool should store memories', async () => {
@@ -76,11 +79,13 @@ test('MemoryRetrieveTool should retrieve memories', async () => {
 });
 
 test('MemoryUpdateTool should update memories', async () => {
-  // Don't reset - use the same instance that was created in previous tests
+  await resetMemoryStore();
+  
   const mockServer = new MockServer();
   const storeTool = new MemoryStoreTool(mockServer);
+  const updateTool = new MemoryUpdateTool(mockServer);
   
-  // Store a memory with a unique key
+  // Step 1: Store a memory
   const uniqueKey = `update-test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   const storeResponse = await storeTool.handle({
     key: uniqueKey,
@@ -92,14 +97,10 @@ test('MemoryUpdateTool should update memories', async () => {
   // Verify memory was stored
   assert.ok(memoryId, 'Memory ID should be returned');
   
-  // Use retrieve to verify it exists (this uses the same singleton)
-  const retrieveTool = new MemoryRetrieveTool(mockServer);
-  await new Promise(resolve => setTimeout(resolve, 200));
-  const verifyResponse = await retrieveTool.handle({ key: uniqueKey });
-  const verifyData = JSON.parse(verifyResponse.content[0].text);
+  // Step 2: Wait for file I/O to complete
+  await new Promise(resolve => setTimeout(resolve, 300));
   
-  // Now update using the same memory ID
-  const updateTool = new MemoryUpdateTool(mockServer);
+  // Step 3: Update the memory using the same singleton
   const response = await updateTool.handle({
     id: memoryId,
     content: 'updated content',
@@ -110,14 +111,18 @@ test('MemoryUpdateTool should update memories', async () => {
   assert.strictEqual(result.success, true);
   assert.ok(result.memory_id);
   assert.strictEqual(result.memory_id, memoryId);
+  assert.ok(result.updated_at);
 });
 
 test('MemoryDeleteTool should delete memories', async () => {
-  // Don't reset - use the same instance that was created in previous tests
+  await resetMemoryStore();
+  
   const mockServer = new MockServer();
   const storeTool = new MemoryStoreTool(mockServer);
+  const deleteTool = new MemoryDeleteTool(mockServer);
+  const retrieveTool = new MemoryRetrieveTool(mockServer);
   
-  // Store a memory with a unique key
+  // Step 1: Store a memory
   const uniqueKey = `delete-test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   const storeResponse = await storeTool.handle({
     key: uniqueKey,
@@ -129,20 +134,29 @@ test('MemoryDeleteTool should delete memories', async () => {
   // Verify memory was stored
   assert.ok(memoryId, 'Memory ID should be returned');
   
-  // Wait a bit and verify it exists
-  await new Promise(resolve => setTimeout(resolve, 200));
-  const retrieveTool = new MemoryRetrieveTool(mockServer);
+  // Step 2: Wait for file I/O to complete
+  await new Promise(resolve => setTimeout(resolve, 300));
+  
+  // Step 3: Verify memory exists before deletion
   const verifyResponse = await retrieveTool.handle({ key: uniqueKey });
   const verifyData = JSON.parse(verifyResponse.content[0].text);
-  assert.ok(verifyData.memories && verifyData.memories.length > 0, 'Memory should exist before delete');
+  assert.ok(verifyData.memories && verifyData.memories.length > 0, 
+    'Memory should exist before delete');
   
-  // Now delete it
-  const deleteTool = new MemoryDeleteTool(mockServer);
+  // Step 4: Delete the memory using the same singleton
   const response = await deleteTool.handle({ id: memoryId });
   
   assertResponseFormat(response);
   const result = JSON.parse(response.content[0].text);
   assert.strictEqual(result.success, true);
+  assert.strictEqual(result.deleted_count, 1);
+  
+  // Step 5: Verify deletion persisted
+  await new Promise(resolve => setTimeout(resolve, 300));
+  const verifyDeletedResponse = await retrieveTool.handle({ key: uniqueKey });
+  const verifyDeletedData = JSON.parse(verifyDeletedResponse.content[0].text);
+  assert.strictEqual(verifyDeletedData.memories.length, 0, 
+    'Memory should be deleted');
 });
 
 test('MemorySearchTool should search memories', async () => {
