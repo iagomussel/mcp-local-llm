@@ -19,7 +19,7 @@ export class GeminiAdapter extends BaseAdapter {
     super(config);
     this.apiKey = config.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
     this.baseUrl = config.GEMINI_BASE_URL || CONSTANTS.DEFAULT_BASE_URL;
-    console.log(`[MCP] Gemini Adapter initialized with model: ${this.getDefaultModel()}`);
+    // Don't log during construction - it interferes with MCP protocol initialization
   }
 
   /**
@@ -50,13 +50,53 @@ export class GeminiAdapter extends BaseAdapter {
         }
       );
 
+      // Check if response is valid
+      if (!response.data) {
+        console.error('[MCP] Gemini API returned empty response');
+        return CONSTANTS.MODELS;
+      }
+
       const models = response.data?.models || [];
-      return models
-        .filter(model => CONSTANTS.MODELS.includes(model.name))
-        .map(model => model.name)
+      
+      // If no models returned, use fallback
+      if (models.length === 0) {
+        console.error('[MCP] No models returned from Gemini API, using fallback list');
+        return CONSTANTS.MODELS;
+      }
+      
+      // Gemini API returns model names with 'models/' prefix
+      // We need to strip it and match against our known models
+      const availableModels = models
+        .map(model => {
+          // Extract model name without 'models/' prefix
+          const cleanName = model.name?.replace(/^models\//, '') || '';
+          return cleanName;
+        })
+        .filter(cleanName => {
+          // Filter to only include known Gemini models
+          return cleanName && CONSTANTS.MODELS.includes(cleanName);
+        })
         .sort();
+      
+      // If filtering resulted in no models, return all known models
+      if (availableModels.length === 0) {
+        console.error('[MCP] No matching models found, using fallback list');
+        return CONSTANTS.MODELS;
+      }
+      
+      return availableModels;
     } catch (error) {
       console.error('[MCP] Failed to get available models from Gemini:', error.message);
+      if (error.response) {
+        console.error('[MCP] Gemini API Response Status:', error.response.status);
+        // Only log response data if it's not too large
+        const responseData = error.response.data;
+        if (responseData && typeof responseData === 'object') {
+          console.error('[MCP] Gemini API Response Data:', JSON.stringify(responseData, null, 2));
+        } else if (responseData && typeof responseData === 'string' && responseData.length < 500) {
+          console.error('[MCP] Gemini API Response Data:', responseData);
+        }
+      }
       // Return known models as fallback
       return CONSTANTS.MODELS;
     }

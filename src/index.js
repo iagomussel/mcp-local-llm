@@ -35,7 +35,7 @@ class LocalLLMServer {
     this.initializeTools();
     this.setupHandlers();
     this.setupErrorHandling();
-    this.initializeModels();
+    // Don't call initializeModels() here - it will be called after transport connection
   }
 
   /**
@@ -72,6 +72,8 @@ class LocalLLMServer {
   async initializeModels() {
     try {
       const provider = this.config.LLM_PROVIDER || 'ollama';
+      console.error(`[MCP] Using LLM provider: ${provider}`);
+      
       const availableModels = await this.llmService.getAvailableModels();
       
       if (availableModels.length === 0) {
@@ -89,7 +91,13 @@ class LocalLLMServer {
       const provider = this.config.LLM_PROVIDER || 'ollama';
       if (provider === 'ollama') {
         console.error('[MCP] Make sure Ollama is running at', CONFIG.OLLAMA_URL);
+      } else if (provider === 'gemini') {
+        console.error('[MCP] Check your GEMINI_API_KEY and ensure it has proper permissions');
+        console.error('[MCP] The server will continue to run, but model listing may be unavailable');
+      } else {
+        console.error(`[MCP] Check your ${provider} API key and configuration`);
       }
+      // Don't throw - allow server to continue running even if model initialization fails
     }
   }
 
@@ -115,8 +123,12 @@ class LocalLLMServer {
     const transport = new StdioServerTransport();
     await this.server.connect(transport);
     
-    // Try to detect client workdir after connection
-    await this.detectClientWorkdir();
+    // Wait a bit for the MCP handshake to complete before logging
+    // This prevents stderr output from interfering with the initialize call
+    setImmediate(async () => {
+      await this.initializeModels();
+      await this.detectClientWorkdir();
+    });
     
     // Don't log to stdout/stderr - MCP protocol uses stdio for JSON-RPC
     // Any logging should be minimal and to stderr only
