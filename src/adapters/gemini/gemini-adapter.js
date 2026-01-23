@@ -19,6 +19,7 @@ export class GeminiAdapter extends BaseAdapter {
     super(config);
     this.apiKey = config.GEMINI_API_KEY || process.env.GEMINI_API_KEY;
     this.baseUrl = config.GEMINI_BASE_URL || CONSTANTS.DEFAULT_BASE_URL;
+    console.log(`[MCP] Gemini Adapter initialized with model: ${this.getDefaultModel()}`);
   }
 
   /**
@@ -67,7 +68,9 @@ export class GeminiAdapter extends BaseAdapter {
   async callChat(payload) {
     try {
       const model = payload.model || this.getDefaultModel();
-      const endpoint = CONSTANTS.API_ENDPOINTS.GENERATE_CONTENT.replace('{model}', model);
+      // Ensure model name doesn't include 'models/' prefix
+      const cleanModel = model.replace(/^models\//, '');
+      const endpoint = CONSTANTS.API_ENDPOINTS.GENERATE_CONTENT.replace('{model}', cleanModel);
       const url = `${this.baseUrl}${endpoint}`;
       
       // Transform messages to Gemini format
@@ -79,15 +82,26 @@ export class GeminiAdapter extends BaseAdapter {
         'x-goog-api-key': this.apiKey,
       };
 
+      const requestBody = {
+        contents: contents,
+        generationConfig: {
+          temperature: payload.temperature ?? this.config.TEMPERATURE ?? COMMON.DEFAULT_TEMPERATURE,
+          maxOutputTokens: payload.max_tokens ?? this.config.MAX_TOKENS ?? COMMON.DEFAULT_MAX_TOKENS,
+        },
+      };
+
+      // Always log URL and model for debugging (stderr won't interfere with MCP protocol)
+      console.error(`[MCP] Gemini API Request: ${url}`);
+      console.error(`[MCP] Gemini Model: ${cleanModel}`);
+      
+      // Detailed logging only if DEBUG env var is set
+      if (process.env.DEBUG === 'true') {
+        console.error(`[MCP] Gemini Request Body: ${JSON.stringify(requestBody, null, 2)}`);
+      }
+
       const response = await axios.post(
         url,
-        {
-          contents: contents,
-          generationConfig: {
-            temperature: payload.temperature ?? this.config.TEMPERATURE ?? COMMON.DEFAULT_TEMPERATURE,
-            maxOutputTokens: payload.max_tokens ?? this.config.MAX_TOKENS ?? COMMON.DEFAULT_MAX_TOKENS,
-          },
-        },
+        requestBody,
         {
           headers,
           timeout: CONSTANTS.TIMEOUT,
@@ -98,8 +112,19 @@ export class GeminiAdapter extends BaseAdapter {
       return this.transformResponse(response.data);
     } catch (error) {
       console.error('[MCP] Error calling Gemini:', error.message);
+      if (error.response) {
+        console.error('[MCP] Gemini API Response Status:', error.response.status);
+        console.error('[MCP] Gemini API Response Data:', JSON.stringify(error.response.data, null, 2));
+        console.error('[MCP] Gemini API Request URL:', error.config?.url);
+        console.error('[MCP] Gemini API Request Headers:', JSON.stringify(error.config?.headers, null, 2));
+      }
       if (error.response?.status === 401 || error.response?.status === 403) {
         throw new Error(ERRORS.INVALID_API_KEY('Gemini'));
+      }
+      if (error.response?.status === 404) {
+        const model = payload.model || this.getDefaultModel();
+        const cleanModel = model.replace(/^models\//, '');
+        throw new Error(`Gemini API endpoint not found. URL: ${error.config?.url || url}, Model: ${cleanModel}. Check if model name is correct.`);
       }
       if (error.response?.status === 429) {
         throw new Error(ERRORS.RATE_LIMIT_EXCEEDED('Gemini'));
@@ -114,9 +139,22 @@ export class GeminiAdapter extends BaseAdapter {
   /**
    * Transform messages to Gemini format
    * Gemini uses a different message format with 'parts' array
+   * Format: contents array with objects containing role and parts
+   * Note: For single-turn conversations, role can be omitted
    */
   transformMessagesToGeminiFormat(messages) {
-    return messages.map(msg => ({
+    // Filter out system messages as Gemini doesn't support them directly
+    const filteredMessages = messages.filter(msg => msg.role !== 'system');
+    
+    // If only one user message, return simple format without role
+    if (filteredMessages.length === 1 && filteredMessages[0].role === 'user') {
+      return [{
+        parts: [{ text: filteredMessages[0].content }],
+      }];
+    }
+    
+    // For multi-turn conversations, include role
+    return filteredMessages.map(msg => ({
       role: msg.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: msg.content }],
     }));
