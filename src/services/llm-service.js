@@ -1,14 +1,17 @@
 import { adapterFactory } from '../adapters/index.js';
 import { CONFIG } from '../config/index.js';
+import { RequestQueue } from './request-queue.js';
 
 /**
  * LLM Service
- * Unified service for interacting with any LLM provider via adapters
+ * Unified service for interacting with any LLM provider via adapters.
+ * Delegates request lifecycle (concurrency, dedup, retry) to RequestQueue.
  */
 export class LLMService {
   constructor(config = CONFIG) {
     this.config = config;
     this.adapter = null;
+    this.requestQueue = new RequestQueue(config);
     this.initializeAdapter();
   }
 
@@ -40,13 +43,42 @@ export class LLMService {
   }
 
   /**
-   * Call the LLM chat API
+   * Call the LLM chat API through the request queue.
+   * Provides concurrency control, deduplication, and retry.
    */
   async callChat(payload) {
     if (!this.adapter) {
       throw new Error('Adapter not initialized');
     }
+    return await this.requestQueue.enqueue(
+      (p) => this.adapter.callChat(p),
+      payload
+    );
+  }
+
+  /**
+   * Call the LLM chat API directly, bypassing the request queue.
+   * Use for health checks or internal calls that should not be queued.
+   */
+  async callChatDirect(payload) {
+    if (!this.adapter) {
+      throw new Error('Adapter not initialized');
+    }
     return await this.adapter.callChat(payload);
+  }
+
+  /**
+   * Get request queue metrics
+   */
+  getQueueMetrics() {
+    return this.requestQueue.getMetrics();
+  }
+
+  /**
+   * Get request queue status
+   */
+  getQueueStatus() {
+    return this.requestQueue.getQueueStatus();
   }
 
   /**

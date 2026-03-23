@@ -34,6 +34,12 @@ export const CONFIG = {
   MAX_TOKENS: parseInt(process.env.MAX_TOKENS) || 256,
   TEMPERATURE: parseFloat(process.env.TEMPERATURE) || 0.7,
   
+  // Request queue configuration
+  QUEUE_MAX_CONCURRENT: parseInt(process.env.QUEUE_MAX_CONCURRENT) || 3,
+  QUEUE_MAX_RETRIES: parseInt(process.env.QUEUE_MAX_RETRIES) || 2,
+  QUEUE_RETRY_DELAY_MS: parseInt(process.env.QUEUE_RETRY_DELAY_MS) || 1000,
+  QUEUE_DEDUP_TTL_MS: parseInt(process.env.QUEUE_DEDUP_TTL_MS) || 30000,
+
   // Feature flags
   DISABLE_CHAT_SUMMARY_RULE: process.env.DISABLE_CHAT_SUMMARY_RULE === 'true' || process.env.DISABLE_CHAT_SUMMARY_RULE === '1',
   

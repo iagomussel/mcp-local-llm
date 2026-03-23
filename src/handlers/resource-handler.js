@@ -54,6 +54,12 @@ export class ResourceHandler {
             description: 'Usage statistics and token savings information',
             mimeType: 'application/json',
           },
+          {
+            uri: 'mcp://local-llm/queue_metrics',
+            name: 'queue_metrics',
+            description: 'Request queue metrics: throughput, latency, concurrency, retries, and deduplication stats',
+            mimeType: 'application/json',
+          },
         ],
       };
     });
@@ -96,6 +102,9 @@ export class ResourceHandler {
 
       case 'mcp://local-llm/usage_stats':
         return this.getUsageStatsResource(uri);
+
+      case 'mcp://local-llm/queue_metrics':
+        return this.getQueueMetricsResource(uri);
 
       default:
         throw new Error(`Unknown resource: ${uri}`);
@@ -219,6 +228,27 @@ export class ResourceHandler {
               resources: true,
             },
             capabilities: ['tools', 'prompts', 'resources'],
+          }, null, 2),
+        },
+      ],
+    };
+  }
+
+  /**
+   * Get queue metrics resource
+   */
+  getQueueMetricsResource(uri) {
+    const metrics = this.llmService.getQueueMetrics();
+    const status = this.llmService.getQueueStatus();
+
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: 'application/json',
+          text: JSON.stringify({
+            queue_status: status,
+            metrics,
           }, null, 2),
         },
       ],
