@@ -54,6 +54,12 @@ export class ResourceHandler {
             description: 'Usage statistics and token savings information',
             mimeType: 'application/json',
           },
+          {
+            uri: 'mcp://local-llm/cache_stats',
+            name: 'cache_statistics',
+            description: 'Result cache statistics: hit rate, entries, evictions',
+            mimeType: 'application/json',
+          },
         ],
       };
     });
@@ -96,6 +102,9 @@ export class ResourceHandler {
 
       case 'mcp://local-llm/usage_stats':
         return this.getUsageStatsResource(uri);
+
+      case 'mcp://local-llm/cache_stats':
+        return this.getCacheStatsResource(uri);
 
       default:
         throw new Error(`Unknown resource: ${uri}`);
@@ -226,9 +235,32 @@ export class ResourceHandler {
   }
 
   /**
+   * Get cache stats resource
+   */
+  getCacheStatsResource(uri) {
+    const stats = this.cacheService ? this.cacheService.getStats() : { enabled: false };
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: 'application/json',
+          text: JSON.stringify({ enabled: !!this.cacheService, ...stats }, null, 2),
+        },
+      ],
+    };
+  }
+
+  /**
    * Set tools reference (called by server)
    */
   setTools(tools) {
     this.tools = tools;
+  }
+
+  /**
+   * Set cache service reference (called by server)
+   */
+  setCacheService(cacheService) {
+    this.cacheService = cacheService;
   }
 }

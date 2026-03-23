@@ -22,6 +22,7 @@ const testFiles = [
   'test/unit/check-llm-status-tool.test.js',
   'test/unit/memory-tools.test.js',
   'test/unit/gemini-adapter.test.js',
+  'test/unit/cache-service.test.js',
   // Integration tests
   'test/integration/all-tools.test.js',
   'test/integration/server-initialization.test.js',

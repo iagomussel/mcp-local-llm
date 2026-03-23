@@ -34,6 +34,11 @@ export const CONFIG = {
   MAX_TOKENS: parseInt(process.env.MAX_TOKENS) || 256,
   TEMPERATURE: parseFloat(process.env.TEMPERATURE) || 0.7,
   
+  // Cache configuration
+  CACHE_ENABLED: process.env.CACHE_ENABLED !== 'false' && process.env.CACHE_ENABLED !== '0', // enabled by default
+  CACHE_MAX_ENTRIES: parseInt(process.env.CACHE_MAX_ENTRIES) || 200,
+  CACHE_DEFAULT_TTL: parseInt(process.env.CACHE_DEFAULT_TTL) || 300000, // 5 minutes in ms
+
   // Feature flags
   DISABLE_CHAT_SUMMARY_RULE: process.env.DISABLE_CHAT_SUMMARY_RULE === 'true' || process.env.DISABLE_CHAT_SUMMARY_RULE === '1',
   

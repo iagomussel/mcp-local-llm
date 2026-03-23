@@ -12,6 +12,8 @@ export class SearchCodeUsageTool extends BaseTool {
     return {
       name: 'search_code_usage',
       description: 'Analyzes code files using AST parsing to find usages of variables, functions, classes, and other code elements. Supports JavaScript, TypeScript, Python, and other languages.',
+      cacheable: true,
+      cacheTTL: 180_000, // 3 minutes
       inputSchema: {
         type: 'object',
         properties: {

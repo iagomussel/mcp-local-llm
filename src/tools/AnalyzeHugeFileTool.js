@@ -5,6 +5,8 @@ export class AnalyzeHugeFileTool extends BaseTool {
     return {
       name: 'analyze_huge_file',
       description: 'Analyzes large files locally and returns a structured summary with architecture, global variables, entry points, and main logic. Reduces token usage by processing files locally before sending to Cursor.',
+      cacheable: true,
+      cacheTTL: 300_000, // 5 minutes
       inputSchema: {
         type: 'object',
         properties: {

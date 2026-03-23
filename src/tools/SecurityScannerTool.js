@@ -5,6 +5,8 @@ export class SecurityScannerTool extends BaseTool {
     return {
       name: 'security_scanner',
       description: 'LLM-powered security, performance, and code quality scanner that analyzes code files for vulnerabilities, performance issues (race conditions, N+1 queries, algorithmic complexity), code quality issues (missing tests, hardcoded values, exposed credentials), and improvement opportunities. Returns structured JSON with security issues and recommendations.',
+      cacheable: true,
+      cacheTTL: 300_000, // 5 minutes
       inputSchema: {
         type: 'object',
         properties: {

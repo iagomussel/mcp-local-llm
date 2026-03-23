@@ -10,7 +10,8 @@ export class MockServer {
       MAX_TOKENS: parseInt(process.env.MAX_TOKENS) || 256,
       TEMPERATURE: parseFloat(process.env.TEMPERATURE) || 0.7,
     };
-    
+
+    this.cacheService = null; // Set externally if cache testing needed
     this.callModelRunnerCalls = [];
     this.selectBestModelCalls = [];
   }

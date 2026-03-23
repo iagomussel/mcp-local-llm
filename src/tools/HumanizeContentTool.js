@@ -5,6 +5,8 @@ export class HumanizeContentTool extends BaseTool {
     return {
       name: 'humanize_content',
       description: 'Rewrites content to sound more natural and human-like. Accepts text, URL, or file path.',
+      cacheable: true,
+      cacheTTL: 600_000, // 10 minutes
       inputSchema: {
         type: 'object',
         properties: {

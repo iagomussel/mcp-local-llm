@@ -5,6 +5,8 @@ export class AskLLMTool extends BaseTool {
     return {
       name: 'ask_llm',
       description: 'Ask a question to the AI model and get a response. The system automatically selects the best model for the task.',
+      cacheable: true,
+      cacheTTL: 600_000, // 10 minutes
       inputSchema: {
         type: 'object',
         properties: {

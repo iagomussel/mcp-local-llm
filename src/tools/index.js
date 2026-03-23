@@ -38,6 +38,8 @@ import { DesktopScreenshotTool } from './DesktopScreenshotTool.js';
 import { DesktopFileOperationsTool } from './DesktopFileOperationsTool.js';
 import { DesktopNotificationTool } from './DesktopNotificationTool.js';
 import { DesktopClipboardTool } from './DesktopClipboardTool.js';
+import { CacheStatsTool } from './CacheStatsTool.js';
+import { CacheClearTool } from './CacheClearTool.js';
 
 // Re-export all tools
 export { BaseTool };
@@ -75,6 +77,8 @@ export { DesktopScreenshotTool };
 export { DesktopFileOperationsTool };
 export { DesktopNotificationTool };
 export { DesktopClipboardTool };
+export { CacheStatsTool };
+export { CacheClearTool };
 
 // Array of all available tools
 export const ALL_TOOLS = [
@@ -112,4 +116,6 @@ export const ALL_TOOLS = [
   DesktopFileOperationsTool,
   DesktopNotificationTool,
   DesktopClipboardTool,
+  CacheStatsTool,
+  CacheClearTool,
 ];

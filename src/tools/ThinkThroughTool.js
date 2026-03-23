@@ -5,6 +5,8 @@ export class ThinkThroughTool extends BaseTool {
     return {
       name: 'think_through',
       description: 'Adds an extra thinking layer by analyzing tasks, considering multiple approaches, and providing structured reasoning before execution. Useful for complex tasks that require planning and validation.',
+      cacheable: true,
+      cacheTTL: 600_000, // 10 minutes
       inputSchema: {
         type: 'object',
         properties: {

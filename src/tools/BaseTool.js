@@ -1,6 +1,6 @@
 /**
  * Base class for all MCP tools
- * Provides common functionality and structure
+ * Provides common functionality, caching support, and structure
  */
 
 export class BaseTool {
@@ -16,6 +16,39 @@ export class BaseTool {
   // Handle the tool execution (to be implemented by each tool)
   async handle(args) {
     throw new Error('handle must be implemented by subclass');
+  }
+
+  /**
+   * Execute with cache support. Called by ToolHandler for cacheable tools.
+   * Subclasses should NOT override this — override handle() instead.
+   */
+  async handleCached(args) {
+    const cache = this.server.cacheService;
+    const def = this.getToolDefinition();
+
+    if (!cache || !def.cacheable) {
+      return this.handle(args);
+    }
+
+    const key = cache.generateKey(def.name, args);
+    const cached = cache.get(key);
+
+    if (cached) {
+      // Annotate response so caller knows it came from cache
+      const result = { ...cached };
+      if (result.content && Array.isArray(result.content)) {
+        result.content = [
+          { type: 'text', text: '[cached result]' },
+          ...result.content,
+        ];
+      }
+      return result;
+    }
+
+    const result = await this.handle(args);
+    const ttl = def.cacheTTL || cache.defaultTTL;
+    cache.set(key, result, ttl);
+    return result;
   }
 
   // Helper method to call the model runner

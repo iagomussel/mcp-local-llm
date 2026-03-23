@@ -4,7 +4,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { ALL_TOOLS } from './tools/index.js';
 import { CONFIG, SERVER_INFO } from './config/index.js';
-import { LLMService, ModelSelector } from './services/index.js';
+import { LLMService, ModelSelector, CacheService } from './services/index.js';
 import { ToolHandler, PromptHandler, ResourceHandler } from './handlers/index.js';
 
 /**
@@ -30,6 +30,9 @@ class LocalLLMServer {
     // Initialize services with adapter pattern
     this.llmService = new LLMService(CONFIG);
     this.modelSelector = new ModelSelector(this.llmService);
+    this.cacheService = CONFIG.CACHE_ENABLED
+      ? new CacheService({ maxEntries: CONFIG.CACHE_MAX_ENTRIES, defaultTTL: CONFIG.CACHE_DEFAULT_TTL })
+      : null;
     
     // Initialize components
     this.initializeTools();
@@ -63,6 +66,7 @@ class LocalLLMServer {
     // Setup resource handlers
     const resourceHandler = new ResourceHandler(this.server, this.llmService);
     resourceHandler.setTools(this.tools);
+    resourceHandler.setCacheService(this.cacheService);
     resourceHandler.setup();
   }
 

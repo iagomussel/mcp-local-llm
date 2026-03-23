@@ -5,6 +5,8 @@ export class CodebaseDiscoveryTool extends BaseTool {
     return {
       name: 'codebase_discovery',
       description: 'Performs semantic search in the codebase to find files and specific lines where related logic is implemented. Uses local processing to reduce token usage.',
+      cacheable: true,
+      cacheTTL: 300_000, // 5 minutes
       inputSchema: {
         type: 'object',
         properties: {

@@ -33,7 +33,7 @@ export class ToolHandler {
           throw new Error(`Unknown tool: ${name}`);
         }
 
-        return await tool.handle(args);
+        return await tool.handleCached(args);
       } catch (error) {
         return {
           content: [

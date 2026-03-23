@@ -7,6 +7,8 @@ export class DocumentorCodeTool extends BaseTool {
     return {
       name: 'documentor_code',
       description: 'Generate inline code documentation (JSDoc, docstrings, etc.) for functions, classes, and modules in a code file.',
+      cacheable: true,
+      cacheTTL: 300_000, // 5 minutes
       inputSchema: {
         type: 'object',
         properties: {
