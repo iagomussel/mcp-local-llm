@@ -1,17 +1,20 @@
 import { adapterFactory } from '../adapters/index.js';
 import { CONFIG } from '../config/index.js';
 import { RequestQueue } from './request-queue.js';
+import { ResponseCache } from './response-cache.js';
 
 /**
  * LLM Service
  * Unified service for interacting with any LLM provider via adapters.
  * Delegates request lifecycle (concurrency, dedup, retry) to RequestQueue.
+ * Caches responses via ResponseCache to avoid redundant LLM calls.
  */
 export class LLMService {
   constructor(config = CONFIG) {
     this.config = config;
     this.adapter = null;
     this.requestQueue = new RequestQueue(config);
+    this.responseCache = new ResponseCache(config);
     this.initializeAdapter();
   }
 
@@ -43,17 +46,26 @@ export class LLMService {
   }
 
   /**
-   * Call the LLM chat API through the request queue.
-   * Provides concurrency control, deduplication, and retry.
+   * Call the LLM chat API with cache-first lookup, then request queue.
+   * Flow: cache check → queue (concurrency, dedup, retry) → cache store.
    */
   async callChat(payload) {
     if (!this.adapter) {
       throw new Error('Adapter not initialized');
     }
-    return await this.requestQueue.enqueue(
+
+    // Check cache first
+    const cached = this.responseCache.get(payload);
+    if (cached) return cached;
+
+    // Execute through queue, then cache the result
+    const result = await this.requestQueue.enqueue(
       (p) => this.adapter.callChat(p),
       payload
     );
+
+    this.responseCache.set(payload, result);
+    return result;
   }
 
   /**
@@ -79,6 +91,20 @@ export class LLMService {
    */
   getQueueStatus() {
     return this.requestQueue.getQueueStatus();
+  }
+
+  /**
+   * Get cache metrics
+   */
+  getCacheMetrics() {
+    return this.responseCache.getMetrics();
+  }
+
+  /**
+   * Clear the response cache. Returns the number of entries cleared.
+   */
+  clearCache() {
+    return this.responseCache.clear();
   }
 
   /**

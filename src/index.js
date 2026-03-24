@@ -168,6 +168,14 @@ class LocalLLMServer {
   get getOptimalMaxTokensForModel() {
     return (modelName, question) => this.modelSelector.getOptimalMaxTokensForModel(modelName, question);
   }
+
+  get getCacheMetrics() {
+    return () => this.llmService.getCacheMetrics();
+  }
+
+  get clearCache() {
+    return () => this.llmService.clearCache();
+  }
 }
 
 // Start the server

@@ -13,7 +13,7 @@ MCP Local LLM is a Model Context Protocol server that acts as a context preproce
 - **Factory Pattern** - Dynamic adapter creation via `AdapterFactory`
 - **Template Method** - `BaseTool` abstract class for all 35+ tools
 - **Singleton** - `MemoryStoreSingleton` for persistent memory
-- **Service Layer** - `LLMService`, `ModelSelector`, `RequestQueue`
+- **Service Layer** - `LLMService`, `ModelSelector`, `RequestQueue`, `ResponseCache`
 
 ### Implemented Features
 | Category | Features |
@@ -21,9 +21,10 @@ MCP Local LLM is a Model Context Protocol server that acts as a context preproce
 | **LLM Providers** | Ollama, OpenAI, Anthropic, Gemini with adapter pattern |
 | **Model Selection** | Intelligent routing by task type (code, math, creative, chat) |
 | **Request Queue** | Concurrency control, deduplication, retry with backoff, metrics |
-| **Tools (35+)** | Code analysis, error logs, memory, desktop, Playwright, docs, security |
+| **Response Cache** | LRU cache with TTL for LLM responses, SHA-256 content-hash keys |
+| **Tools (37)** | Code analysis, error logs, memory, desktop, Playwright, docs, security, cache |
 | **Prompts (5)** | Token economy, context compression, thinking layer, tool usage rules |
-| **Resources (6)** | Config, models, tools, prompts, usage stats, queue metrics |
+| **Resources (7)** | Config, models, tools, prompts, usage stats, queue metrics, cache metrics |
 | **Memory** | Persistent JSON store with search, tags, metadata filtering |
 | **Transport** | Stdio (MCP standard) |
 
@@ -35,10 +36,12 @@ MCP Local LLM is a Model Context Protocol server that acts as a context preproce
 **Status: In Progress**
 
 - [x] **Request Queue** - Concurrency control, dedup, retry, metrics tracking
-- [ ] **Result Caching** - LRU cache for LLM responses with configurable TTL
-  - Per-tool opt-in caching
-  - Content-hash based keys
-  - Cache invalidation strategies
+- [x] **Result Caching** - LRU cache for LLM responses with configurable TTL
+  - SHA-256 content-hash based keys (model + messages + temperature + max_tokens)
+  - LRU eviction when at capacity, automatic TTL expiration
+  - `cache_stats` and `clear_cache` MCP tools for runtime management
+  - Exposed as `mcp://local-llm/cache_metrics` resource
+  - Configurable via `CACHE_ENABLED`, `CACHE_TTL_MS`, `CACHE_MAX_SIZE`
 - [ ] **Health Monitoring** - Periodic provider health checks with auto-failover
   - Heartbeat pings to active provider
   - Automatic fallback to secondary provider on failure
@@ -119,6 +122,9 @@ MCP Local LLM is a Model Context Protocol server that acts as a context preproce
 | `QUEUE_MAX_RETRIES` | `2` | Retry attempts on failure |
 | `QUEUE_RETRY_DELAY_MS` | `1000` | Base retry delay (exponential backoff) |
 | `QUEUE_DEDUP_TTL_MS` | `30000` | Deduplication window for identical requests |
+| `CACHE_ENABLED` | `true` | Enable/disable LLM response caching |
+| `CACHE_TTL_MS` | `300000` | Cache entry time-to-live (5 min default) |
+| `CACHE_MAX_SIZE` | `100` | Maximum cached entries (LRU eviction) |
 | `DISABLE_CHAT_SUMMARY_RULE` | `false` | Disable chat summary prompt injection |
 
 ---

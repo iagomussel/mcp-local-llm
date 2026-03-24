@@ -40,6 +40,11 @@ export const CONFIG = {
   QUEUE_RETRY_DELAY_MS: parseInt(process.env.QUEUE_RETRY_DELAY_MS) || 1000,
   QUEUE_DEDUP_TTL_MS: parseInt(process.env.QUEUE_DEDUP_TTL_MS) || 30000,
 
+  // Response cache configuration
+  CACHE_ENABLED: process.env.CACHE_ENABLED !== 'false', // Enabled by default
+  CACHE_TTL_MS: parseInt(process.env.CACHE_TTL_MS) || 300000, // 5 minutes
+  CACHE_MAX_SIZE: parseInt(process.env.CACHE_MAX_SIZE) || 100, // Max cached entries
+
   // Feature flags
   DISABLE_CHAT_SUMMARY_RULE: process.env.DISABLE_CHAT_SUMMARY_RULE === 'true' || process.env.DISABLE_CHAT_SUMMARY_RULE === '1',
   
