@@ -66,6 +66,12 @@ export class ResourceHandler {
             description: 'Response cache metrics: hit rate, size, evictions, and TTL configuration',
             mimeType: 'application/json',
           },
+          {
+            uri: 'mcp://local-llm/health_metrics',
+            name: 'health_metrics',
+            description: 'Provider health monitoring: status, failover state, and per-provider health details',
+            mimeType: 'application/json',
+          },
         ],
       };
     });
@@ -114,6 +120,9 @@ export class ResourceHandler {
 
       case 'mcp://local-llm/cache_metrics':
         return this.getCacheMetricsResource(uri);
+
+      case 'mcp://local-llm/health_metrics':
+        return this.getHealthMetricsResource(uri);
 
       default:
         throw new Error(`Unknown resource: ${uri}`);
@@ -276,6 +285,24 @@ export class ResourceHandler {
           uri,
           mimeType: 'application/json',
           text: JSON.stringify(metrics, null, 2),
+        },
+      ],
+    };
+  }
+
+  /**
+   * Get health metrics resource
+   */
+  getHealthMetricsResource(uri) {
+    const status = this.llmService.getHealthStatus();
+    const metrics = this.llmService.getHealthMetrics();
+
+    return {
+      contents: [
+        {
+          uri,
+          mimeType: 'application/json',
+          text: JSON.stringify({ status, metrics }, null, 2),
         },
       ],
     };

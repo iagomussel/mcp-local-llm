@@ -13,7 +13,7 @@ MCP Local LLM is a Model Context Protocol server that acts as a context preproce
 - **Factory Pattern** - Dynamic adapter creation via `AdapterFactory`
 - **Template Method** - `BaseTool` abstract class for all 35+ tools
 - **Singleton** - `MemoryStoreSingleton` for persistent memory
-- **Service Layer** - `LLMService`, `ModelSelector`, `RequestQueue`, `ResponseCache`
+- **Service Layer** - `LLMService`, `ModelSelector`, `RequestQueue`, `ResponseCache`, `HealthMonitor`
 
 ### Implemented Features
 | Category | Features |
@@ -22,9 +22,9 @@ MCP Local LLM is a Model Context Protocol server that acts as a context preproce
 | **Model Selection** | Intelligent routing by task type (code, math, creative, chat) |
 | **Request Queue** | Concurrency control, deduplication, retry with backoff, metrics |
 | **Response Cache** | LRU cache with TTL for LLM responses, SHA-256 content-hash keys |
-| **Tools (37)** | Code analysis, error logs, memory, desktop, Playwright, docs, security, cache |
+| **Tools (38)** | Code analysis, error logs, memory, desktop, Playwright, docs, security, cache, health |
 | **Prompts (5)** | Token economy, context compression, thinking layer, tool usage rules |
-| **Resources (7)** | Config, models, tools, prompts, usage stats, queue metrics, cache metrics |
+| **Resources (8)** | Config, models, tools, prompts, usage stats, queue metrics, cache metrics, health metrics |
 | **Memory** | Persistent JSON store with search, tags, metadata filtering |
 | **Transport** | Stdio (MCP standard) |
 
@@ -42,10 +42,13 @@ MCP Local LLM is a Model Context Protocol server that acts as a context preproce
   - `cache_stats` and `clear_cache` MCP tools for runtime management
   - Exposed as `mcp://local-llm/cache_metrics` resource
   - Configurable via `CACHE_ENABLED`, `CACHE_TTL_MS`, `CACHE_MAX_SIZE`
-- [ ] **Health Monitoring** - Periodic provider health checks with auto-failover
-  - Heartbeat pings to active provider
-  - Automatic fallback to secondary provider on failure
-  - Recovery detection and switch-back
+- [x] **Health Monitoring** - Periodic provider health checks with auto-failover
+  - Heartbeat pings to active provider at configurable intervals
+  - Automatic fallback to secondary provider after failure threshold
+  - Recovery detection and switch-back to primary when healthy
+  - `health_status` MCP tool for runtime inspection
+  - Exposed as `mcp://local-llm/health_metrics` resource
+  - Configurable via `HEALTH_MONITOR_ENABLED`, `HEALTH_CHECK_INTERVAL_MS`, `HEALTH_FAILURE_THRESHOLD`, `HEALTH_RECOVERY_THRESHOLD`
 
 ### Phase 3 - Transport & Connectivity
 - [ ] **HTTP/SSE Transport** - Streamable HTTP transport alongside stdio
@@ -125,6 +128,10 @@ MCP Local LLM is a Model Context Protocol server that acts as a context preproce
 | `CACHE_ENABLED` | `true` | Enable/disable LLM response caching |
 | `CACHE_TTL_MS` | `300000` | Cache entry time-to-live (5 min default) |
 | `CACHE_MAX_SIZE` | `100` | Maximum cached entries (LRU eviction) |
+| `HEALTH_MONITOR_ENABLED` | `true` | Enable/disable provider health monitoring |
+| `HEALTH_CHECK_INTERVAL_MS` | `30000` | Interval between health checks (30s default) |
+| `HEALTH_FAILURE_THRESHOLD` | `3` | Consecutive failures before failover |
+| `HEALTH_RECOVERY_THRESHOLD` | `2` | Consecutive successes before recovery to primary |
 | `DISABLE_CHAT_SUMMARY_RULE` | `false` | Disable chat summary prompt injection |
 
 ---

@@ -2,12 +2,14 @@ import { adapterFactory } from '../adapters/index.js';
 import { CONFIG } from '../config/index.js';
 import { RequestQueue } from './request-queue.js';
 import { ResponseCache } from './response-cache.js';
+import { HealthMonitor } from './health-monitor.js';
 
 /**
  * LLM Service
  * Unified service for interacting with any LLM provider via adapters.
  * Delegates request lifecycle (concurrency, dedup, retry) to RequestQueue.
  * Caches responses via ResponseCache to avoid redundant LLM calls.
+ * Monitors provider health and auto-failovers via HealthMonitor.
  */
 export class LLMService {
   constructor(config = CONFIG) {
@@ -15,7 +17,32 @@ export class LLMService {
     this.adapter = null;
     this.requestQueue = new RequestQueue(config);
     this.responseCache = new ResponseCache(config);
+    this.healthMonitor = new HealthMonitor(config);
     this.initializeAdapter();
+    this._setupHealthMonitor();
+  }
+
+  /**
+   * Wire up the health monitor to perform auto-failover.
+   */
+  _setupHealthMonitor() {
+    this.healthMonitor.onFailover((newProvider, oldProvider, reason) => {
+      this.switchProvider(newProvider);
+    });
+  }
+
+  /**
+   * Start health monitoring (call after transport is connected).
+   */
+  startHealthMonitor() {
+    this.healthMonitor.start();
+  }
+
+  /**
+   * Stop health monitoring (call on shutdown).
+   */
+  stopHealthMonitor() {
+    this.healthMonitor.stop();
   }
 
   /**
@@ -105,6 +132,20 @@ export class LLMService {
    */
   clearCache() {
     return this.responseCache.clear();
+  }
+
+  /**
+   * Get health status for all providers
+   */
+  getHealthStatus() {
+    return this.healthMonitor.getStatus();
+  }
+
+  /**
+   * Get health monitor metrics
+   */
+  getHealthMetrics() {
+    return this.healthMonitor.getMetrics();
   }
 
   /**

@@ -86,6 +86,7 @@ class LocalLLMServer {
     };
 
     process.on('SIGINT', async () => {
+      this.llmService.stopHealthMonitor();
       await this.server.close();
       process.exit(0);
     });
@@ -103,6 +104,7 @@ class LocalLLMServer {
     setImmediate(async () => {
       await this.initializeModels();
       await this.detectClientWorkdir();
+      this.llmService.startHealthMonitor();
     });
     
     // Don't log to stdout/stderr - MCP protocol uses stdio for JSON-RPC
@@ -175,6 +177,14 @@ class LocalLLMServer {
 
   get clearCache() {
     return () => this.llmService.clearCache();
+  }
+
+  get getHealthStatus() {
+    return () => this.llmService.getHealthStatus();
+  }
+
+  get getHealthMetrics() {
+    return () => this.llmService.getHealthMetrics();
   }
 }
 

@@ -45,6 +45,12 @@ export const CONFIG = {
   CACHE_TTL_MS: parseInt(process.env.CACHE_TTL_MS) || 300000, // 5 minutes
   CACHE_MAX_SIZE: parseInt(process.env.CACHE_MAX_SIZE) || 100, // Max cached entries
 
+  // Health monitor configuration
+  HEALTH_MONITOR_ENABLED: process.env.HEALTH_MONITOR_ENABLED !== 'false', // Enabled by default
+  HEALTH_CHECK_INTERVAL_MS: parseInt(process.env.HEALTH_CHECK_INTERVAL_MS) || 30000, // 30 seconds
+  HEALTH_FAILURE_THRESHOLD: parseInt(process.env.HEALTH_FAILURE_THRESHOLD) || 3, // Failures before failover
+  HEALTH_RECOVERY_THRESHOLD: parseInt(process.env.HEALTH_RECOVERY_THRESHOLD) || 2, // Successes before recovery
+
   // Feature flags
   DISABLE_CHAT_SUMMARY_RULE: process.env.DISABLE_CHAT_SUMMARY_RULE === 'true' || process.env.DISABLE_CHAT_SUMMARY_RULE === '1',
   

@@ -40,6 +40,7 @@ import { DesktopNotificationTool } from './DesktopNotificationTool.js';
 import { DesktopClipboardTool } from './DesktopClipboardTool.js';
 import { CacheStatsTool } from './CacheStatsTool.js';
 import { ClearCacheTool } from './ClearCacheTool.js';
+import { HealthStatusTool } from './HealthStatusTool.js';
 
 // Re-export all tools
 export { BaseTool };
@@ -79,6 +80,7 @@ export { DesktopNotificationTool };
 export { DesktopClipboardTool };
 export { CacheStatsTool };
 export { ClearCacheTool };
+export { HealthStatusTool };
 
 // Array of all available tools
 export const ALL_TOOLS = [
@@ -118,4 +120,5 @@ export const ALL_TOOLS = [
   DesktopClipboardTool,
   CacheStatsTool,
   ClearCacheTool,
+  HealthStatusTool,
 ];
